@@ -57,7 +57,7 @@ export default function TeacherDashboard() {
         {/* Stats Grid - Minimalist Polished */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
           {[
-            { label: "Active Learners", value: "1,284", icon: <Users />, color: "bg-blue-500", trend: "+12%", bg: "from-blue-500/10" },
+            { label: "Active Learners", value: "1,284", icon: <Users />, color: "bg-z-blue", trend: "+12%", bg: "from-z-blue/10" },
             { label: "Courses Hosted", value: "12", icon: <BookOpen />, color: "bg-z-red", trend: "+2", bg: "from-z-red/10" },
             { label: "Avg. Proficiency", value: "88%", icon: <TrendingUp />, color: "bg-emerald-500", trend: "+3%", bg: "from-emerald-500/10" },
             { label: "Alumni Count", value: "412", icon: <GraduationCap />, color: "bg-z-gold", trend: "+15", bg: "from-z-gold/10" },

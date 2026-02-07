@@ -36,6 +36,8 @@ const LoginPage = () => {
         router.push("/dashboard/org");
       } else if (email === "ngo@zimplar.com") {
         router.push("/dashboard/ngo");
+      } else if (email === "private@zimplar.com") {
+        router.push("/dashboard/private");
       } else if (email.includes("admin")) {
         router.push("/admin");
       } else if (email.includes("teacher")) {
@@ -55,13 +57,10 @@ const LoginPage = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Logo Section */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2 group cursor-pointer">
-            <div className="bg-z-red p-2 rounded-xl shadow-lg transform group-hover:scale-110 transition-transform duration-300 cursor-pointer">
-              <GraduationCap className="w-8 h-8 text-white cursor-pointer" />
+          <Link href="/" className="inline-flex items-center justify-center space-x-2 group cursor-pointer">
+            <div className="bg-transparent p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
+               <Image src="/zimplarlogo.png" alt="Zimplar" width={200} height={200} className="w-40 h-40 object-contain" />
             </div>
-            <span className="text-3xl font-bold tracking-tight text-z-red">
-              Zimplar
-            </span>
           </Link>
           <p className="mt-4 text-z-gray font-medium">Welcome back! Please enter your details.</p>
         </div>
@@ -249,6 +248,27 @@ const LoginPage = () => {
                    </div>
                 </div>
                 <ArrowRight className="w-4 h-4 text-amber-500 group-hover:translate-x-1 transition-transform" />
+              </button>
+
+              <button 
+                onClick={() => signIn("credentials", { 
+                  email: "private@zimplar.com", 
+                  password: "private123",
+                  callbackUrl: "/dashboard/private",
+                  redirect: true
+                })}
+                className="w-full flex items-center justify-between p-4 bg-z-blue/5 hover:bg-z-blue/10 border border-z-blue/10 rounded-[1.5rem] transition-all group cursor-pointer"
+              >
+                <div className="flex items-center space-x-3">
+                   <div className="bg-z-blue p-2.5 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
+                      <ShieldCheck className="w-4 h-4" />
+                   </div>
+                   <div className="text-left">
+                      <p className="text-xs font-black text-z-blue uppercase tracking-tighter">Private School Demo</p>
+                      <p className="text-[10px] text-z-gray/60 font-bold">Use: private@zimplar.com / private123</p>
+                   </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-z-blue group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </div>

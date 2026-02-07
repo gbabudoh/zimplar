@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import JitsiPlayer from "@/components/video/JitsiPlayer";
 import OwncastPlayer from "@/components/video/OwncastPlayer";
@@ -31,7 +31,7 @@ export default function ClassroomPage({ params }: { params: Promise<{ id: string
   ]);
   const [messageInput, setMessageInput] = useState("");
   const alertCounterRef = React.useRef(0);
-  const isModerator = (session?.user as any)?.role === "TEACHER";
+  const isModerator = (session?.user as { role?: string })?.role === "TEACHER";
 
   const handleAIAlert = (type: string, severity: string) => {
     console.log(`AI PROCTOR ALERT: ${type} (${severity})`);
@@ -126,11 +126,29 @@ export default function ClassroomPage({ params }: { params: Promise<{ id: string
                  <JitsiPlayer 
                    roomName={id} 
                    userName={session?.user?.name || "User"}
-                   userEmail={session?.user?.email}
+                   userEmail={session?.user?.email ?? undefined}
                    isModerator={isModerator}
                  />
                ) : (
-                 <OwncastPlayer />
+                 <div className="relative">
+                   <OwncastPlayer />
+                   {isModerator && (
+                     <div className="absolute bottom-10 right-10 w-64 h-48 bg-slate-800 rounded-3xl border-4 border-white/20 shadow-2xl overflow-hidden z-30 group">
+                       <p className="absolute top-4 left-4 text-[8px] font-black text-white uppercase tracking-widest z-10 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-md">Local Preview (Broadcasting)</p>
+                       <video 
+                         id="local-broadcast-preview"
+                         autoPlay 
+                         muted 
+                         ref={(el) => {
+                           if (el && !el.srcObject) {
+                             navigator.mediaDevices.getUserMedia({ video: true }).then(s => el.srcObject = s);
+                           }
+                         }}
+                         className="w-full h-full object-cover"
+                       />
+                     </div>
+                   )}
+                 </div>
                )}
             </div>
         </div>

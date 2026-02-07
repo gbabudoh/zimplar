@@ -18,10 +18,10 @@ import {
 
 // Mock Data for Institutional View
 const stats = [
-  { label: "Active Schools", value: "124", icon: Building, color: "text-emerald-500", bg: "bg-emerald-100" },
-  { label: "Regional Classrooms", value: "3,842", icon: Globe, color: "text-z-blue", bg: "bg-blue-100" },
-  { label: "Total Students", value: "48.2k", icon: Users, color: "text-purple-500", bg: "bg-purple-100" },
-  { label: "Rural Reach", value: "42%", icon: Sprout, color: "text-amber-600", bg: "bg-amber-100" },
+  { label: "Active Schools", value: "124", icon: Building, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { label: "Regional Classrooms", value: "3,842", icon: Globe, color: "text-z-blue", bg: "bg-z-blue/10" },
+  { label: "Total Students", value: "48.2k", icon: Users, color: "text-purple-500", bg: "bg-purple-500/10" },
+  { label: "Rural Reach", value: "42%", icon: Sprout, color: "text-amber-600", bg: "bg-amber-600/10" },
 ];
 
 const regionalPerformance = [

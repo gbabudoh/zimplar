@@ -51,6 +51,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return { id: "ngo-demo", email, name: "Impact Director", role: "ORG_ADMIN" };
         }
 
+        if (email === "private@zimplar.com" && password === "private123") {
+          return { id: "private-demo", email, name: "School Head", role: "SCHOOL" };
+        }
+
         return null;
       },
     }),

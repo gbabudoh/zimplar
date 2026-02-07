@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
-import { GraduationCap, Mail, Lock, User, ArrowRight, UserCircle } from "lucide-react";
+import { GraduationCap, Mail, Lock, User, ArrowRight, UserCircle, ShieldCheck } from "lucide-react";
 
 const SignupPage = () => {
   const [role, setRole] = useState<"STUDENT" | "TEACHER">("STUDENT");
@@ -18,13 +18,10 @@ const SignupPage = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Logo Section */}
         <div className="text-center mb-6">
-          <Link href="/" className="inline-flex items-center space-x-2 group">
-            <div className="bg-z-red p-2 rounded-xl shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-              <GraduationCap className="w-8 h-8 text-white" />
+          <Link href="/" className="inline-flex items-center justify-center space-x-2 group">
+            <div className="bg-transparent p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
+               <Image src="/zimplarlogo.png" alt="Zimplar" width={200} height={200} className="w-40 h-40 object-contain" />
             </div>
-            <span className="text-3xl font-bold tracking-tight text-z-red">
-              Zimplar
-            </span>
           </Link>
           <p className="mt-4 text-z-gray font-medium">Join our community of learners today.</p>
         </div>
@@ -93,7 +90,7 @@ const SignupPage = () => {
                   <UserCircle className="w-6 h-6 mb-1" />
                   <span className="text-xs font-bold uppercase">Student</span>
                </button>
-               <button 
+                <button 
                   type="button" 
                   onClick={() => setRole("TEACHER")}
                   className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all cursor-pointer ${
@@ -104,6 +101,14 @@ const SignupPage = () => {
                >
                   <GraduationCap className="w-6 h-6 mb-1" />
                   <span className="text-xs font-bold uppercase">Teacher</span>
+               </button>
+               <button 
+                  type="button" 
+                  onClick={() => (window.location.href = "/dashboard/private")}
+                  className="flex flex-col items-center justify-center p-3 rounded-2xl border-2 border-z-blue/10 bg-white/40 text-z-gray hover:border-z-red/30 transition-all cursor-pointer group"
+               >
+                  <ShieldCheck className="w-6 h-6 mb-1 group-hover:text-z-red transition-colors" />
+                  <span className="text-xs font-bold uppercase">Private</span>
                </button>
             </div>
 

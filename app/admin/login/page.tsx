@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
         {/* Branding */}
         <div className="flex flex-col items-center mb-10">
           <Link href="/" className="mb-6 hover:scale-105 transition-transform">
-            <Image src="/logo.png" alt="Zimplar" width={180} height={50} priority />
+            <Image src="/zimplarlogo.png" alt="Zimplar" width={180} height={50} priority />
           </Link>
           <div className="bg-zinc-900 text-white px-4 py-1.5 rounded-full flex items-center space-x-2 shadow-xl shadow-zinc-900/10">
             <Shield className="w-4 h-4 text-z-red" />

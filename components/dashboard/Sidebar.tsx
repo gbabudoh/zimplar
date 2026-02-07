@@ -2,9 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { 
-  GraduationCap, 
   LayoutDashboard, 
   BookOpen, 
   Users, 
@@ -16,7 +16,10 @@ import {
   CreditCard,
   BarChart3,
   HeartHandshake,
-  Sprout
+  Sprout,
+  ShieldCheck,
+  Smartphone,
+  Palette
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 
@@ -66,8 +69,16 @@ const ngoLinks: NavItem[] = [
   { icon: <CreditCard className="w-5 h-5" />, label: "Subsidy Wallet", href: "/dashboard/billing" },
 ];
 
+const schoolLinks: NavItem[] = [
+  { icon: <ShieldCheck className="w-5 h-5" />, label: "School Overview", href: "/dashboard/private" },
+  { icon: <Smartphone className="w-5 h-5" />, label: "Parent Portals", href: "/dashboard/private/portals" },
+  { icon: <Users className="w-5 h-5" />, label: "CRM Tools", href: "/dashboard/private/crm" },
+  { icon: <Palette className="w-5 h-5" />, label: "Branding", href: "/dashboard/private/branding" },
+  { icon: <CreditCard className="w-5 h-5" />, label: "Tuition Hub", href: "/dashboard/billing" },
+];
+
 interface SidebarProps {
-  role?: "TEACHER" | "STUDENT" | "ADMIN" | "ORG_ADMIN" | "NGO";
+  role?: "TEACHER" | "STUDENT" | "ADMIN" | "ORG_ADMIN" | "NGO" | "SCHOOL";
 }
 
 export default function Sidebar({ role: initialRole }: SidebarProps) {
@@ -84,16 +95,16 @@ export default function Sidebar({ role: initialRole }: SidebarProps) {
                 effectiveRole === "ADMIN" ? adminLinks : 
                 (effectiveRole === "ORG_ADMIN" && isNgoContext) ? ngoLinks :
                 effectiveRole === "ORG_ADMIN" ? orgLinks : 
+                effectiveRole === "SCHOOL" ? schoolLinks :
                 studentLinks;
 
   return (
     <aside className="w-64 h-[calc(100vh-2rem)] fixed left-4 top-4 bg-white/70 backdrop-blur-2xl border border-white/40 p-6 flex flex-col z-50 rounded-[2.5rem] shadow-2xl shadow-z-red/5">
       {/* Branding */}
-      <div className="flex items-center space-x-3 mb-10 px-2">
-        <div className="bg-z-red p-2.5 rounded-2xl shadow-lg shadow-z-red/20 rotate-3 group-hover:rotate-0 transition-transform">
-          <GraduationCap className="w-6 h-6 text-white" />
-        </div>
-        <span className="text-2xl font-black text-z-red tracking-tighter">Zimplar</span>
+      <div className="flex items-center justify-center mb-10 px-2">
+        <Link href="/">
+           <Image src="/zimplarlogo.png" alt="Zimplar" width={128} height={128} className="w-32 h-32 object-contain hover:scale-105 transition-transform" />
+        </Link>
       </div>
 
       {/* Navigation */}

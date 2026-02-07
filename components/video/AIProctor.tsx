@@ -14,6 +14,7 @@ const AIProctor: React.FC<AIProctorProps> = ({ onAlert }) => {
   const [model, setModel] = useState<blazeface.BlazeFaceModel | null>(null);
   const [status, setStatus] = useState<"READY" | "MONITORING" | "ALERT">("READY");
   const [personCount, setPersonCount] = useState(0);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   // Load Model
   useEffect(() => {
@@ -29,9 +30,17 @@ const AIProctor: React.FC<AIProctorProps> = ({ onAlert }) => {
   // Setup Camera
   useEffect(() => {
     if (videoRef.current) {
-      navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-        if (videoRef.current) videoRef.current.srcObject = stream;
-      });
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then((stream) => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            setCameraError(null);
+          }
+        })
+        .catch((err) => {
+          console.error("Camera Access Error:", err);
+          setCameraError(err.name === "NotAllowedError" ? "Camera permission denied" : "Camera not found");
+        });
     }
   }, []);
 
@@ -94,6 +103,15 @@ const AIProctor: React.FC<AIProctorProps> = ({ onAlert }) => {
       {status === 'ALERT' && (
         <div className="mt-2 bg-z-red/90 backdrop-blur-md px-4 py-2 rounded-xl border border-z-red shadow-lg animate-bounce">
            <p className="text-[8px] font-black text-white uppercase tracking-widest">Malpractice Warning</p>
+        </div>
+      )}
+
+      {cameraError && (
+        <div className="mt-2 bg-amber-500/90 backdrop-blur-md px-4 py-2 rounded-xl border border-amber-400 shadow-lg">
+           <p className="text-[8px] font-black text-white uppercase tracking-widest flex items-center">
+             <ShieldAlert className="w-3 h-3 mr-1" />
+             {cameraError}
+           </p>
         </div>
       )}
     </div>

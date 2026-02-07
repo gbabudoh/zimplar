@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, GraduationCap } from "lucide-react";
+import Image from "next/image";
+import { Menu, X} from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,12 +29,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="bg-z-red p-1.5 rounded-lg shadow-lg">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-z-red">
-              Zimplar
-            </span>
+            <Image src="/zimplarlogo.png" alt="Zimplar Logo" width={200} height={200} className="w-40 h-40 object-contain" />
           </Link>
 
           {/* Desktop Nav */}
