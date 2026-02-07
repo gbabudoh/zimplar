@@ -1,0 +1,337 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ORG_ADMIN
+  ADMIN
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role            @default(STUDENT)
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  courses       Course[]        @relation("TeacherCourses")
+  enrollments   Enrollment[]
+  submissions   Submission[]
+  
+  // New Ecosystem relations
+  classroomsManaged Classroom[] @relation("TeacherClassrooms")
+  classrooms     ClassroomUser[]
+  aiAlerts       AIAlert[]
+  
+  // Monetization
+  subscriptions  Subscription[]
+  dataAllocation DataAllocation?
+  transactions   Transaction[]
+  organizationProfile OrganizationProfile?
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([provider, providerAccountId])
+}
+ 
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+ 
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@id([identifier, token])
+}
+
+model Classroom {
+  id            String          @id @default(cuid())
+  name          String
+  description   String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  teacherId     String
+  teacher       User            @relation("TeacherClassrooms", fields: [teacherId], references: [id])
+  
+  students      ClassroomUser[]
+  courses       Course[]        @relation("ClassroomCourses")
+}
+
+model ClassroomUser {
+  id            String          @id @default(cuid())
+  classroomId   String
+  userId        String
+  joinedAt      DateTime        @default(now())
+
+  classroom     Classroom       @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([classroomId, userId])
+}
+
+model Course {
+  id            String          @id @default(cuid())
+  title         String
+  description   String?
+  thumbnail     String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  teacherId     String
+  teacher       User            @relation("TeacherCourses", fields: [teacherId], references: [id])
+  
+  classrooms    Classroom[]     @relation("ClassroomCourses")
+  lessons       Lesson[]
+  enrollments   Enrollment[]
+  assessments   Assessment[]
+}
+
+model Assessment {
+  id            String          @id @default(cuid())
+  title         String
+  description   String?
+  type          AssessmentType  @default(QUIZ)
+  dueDate       DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  courseId      String
+  course        Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  submissions   Submission[]   // Reusing submission but could specialized if needed
+}
+
+enum AssessmentType {
+  QUIZ
+  EXAM
+  PROJECT
+}
+
+model AIAlert {
+  id            String          @id @default(cuid())
+  type          String          // "MULTIPLE_PEOPLE", "OUT_OF_FRAME", "PHONE_DETECTED"
+  severity      String          @default("LOW") // LOW, MEDIUM, HIGH
+  timestamp     DateTime        @default(now())
+  
+  userId        String
+  user          User            @relation(fields: [userId], references: [id])
+  
+  sessionId     String?         // Links to a specific Classroom session
+}
+
+model Lesson {
+  id            String       @id @default(cuid())
+  title         String
+  description   String?
+  content       String?      @db.Text
+  videoUrl      String?      // Jitsi Room Name or URL
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  courseId      String
+  course        Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  assignments   Assignment[]
+}
+
+model Assignment {
+  id            String       @id @default(cuid())
+  title         String
+  description   String?
+  materialUrl   String?      // MinIO link for teacher's materials
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  lessonId      String
+  lesson        Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  submissions   Submission[]
+}
+
+model Enrollment {
+  id            String       @id @default(cuid())
+  createdAt     DateTime     @default(now())
+
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  
+  courseId      String
+  course        Course       @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+model Submission {
+  id            String       @id @default(cuid())
+  fileUrl       String       // MinIO link for student's submission
+  grade         String?
+  feedback      String?
+  status        String       @default("PENDING") // PENDING, GRADED
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  studentId     String
+  student       User         @relation(fields: [studentId], references: [id])
+  
+  assignmentId  String?
+  assignment    Assignment?  @relation(fields: [assignmentId], references: [id])
+  
+  assessmentId  String?
+  assessment    Assessment?  @relation(fields: [assessmentId], references: [id])
+}
+
+// --- ADMIN & CMS ---
+
+model SiteSettings {
+  id          String   @id @default(cuid())
+  heroTitle   String   @default("Welcome to Zimplar")
+  heroSubtitle String?
+  heroImage   String?
+  features    Json?    // Store feature toggles or list
+  updatedAt   DateTime @updatedAt
+}
+
+// --- MONETIZATION & BILLING ---
+
+model Subscription {
+  id            String    @id @default(cuid())
+  userId        String    
+  user          User      @relation(fields: [userId], references: [id])
+  planType      PlanType  @default(FREE) 
+  orgType       OrgType   @default(PRIVATE) 
+  status        SubStatus @default(ACTIVE)
+  startDate     DateTime  @default(now())
+  endDate       DateTime?
+  amount        Float     @default(0.0)
+  currency      String    @default("USD")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum PlanType {
+  FREE
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum OrgType {
+  GOVERNMENT
+  CHARITY
+  PRIVATE
+}
+
+enum SubStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+model DataAllocation {
+  id          String   @id @default(cuid())
+  userId      String   @unique 
+  user        User     @relation(fields: [userId], references: [id])
+  totalCapGB  Float    @default(5.0) 
+  usedGB      Float    @default(0.0)
+  lastReset   DateTime @default(now())
+  purchases   DataPurchase[]
+}
+
+model DataPurchase {
+  id              String         @id @default(cuid())
+  allocationId    String
+  allocation      DataAllocation @relation(fields: [allocationId], references: [id])
+  amountGB        Float
+  cost            Float
+  purchasedAt     DateTime       @default(now())
+  transactionId   String?
+  transaction     Transaction?   @relation(fields: [transactionId], references: [id])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Float
+  currency    String   @default("USD")
+  type        TxType   
+  status      TxStatus @default(COMPLETED)
+  reference   String?  // Payment gateway ref
+  createdAt   DateTime @default(now())
+  
+  dataPurchase DataPurchase[]
+}
+
+enum TxType {
+  SUBSCRIPTION
+  DATA_TOPUP
+}
+
+enum TxStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model OrganizationProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  name           String
+  description    String?
+  website        String?
+  type           OrgType  @default(PRIVATE)
+  regNumber      String?  // NGO number or Gov ID
+  contactEmail   String?
+  address        String?
+  isVerified     Boolean  @default(false)
+  verifiedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

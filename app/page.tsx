@@ -1,65 +1,108 @@
-import Image from "next/image";
+import Navbar from "@/components/Navbar";
+import Hero from "@/components/Hero";
+import Link from "next/link";
+import { 
+  Building, 
+  Users, 
+  ShieldCheck, 
+  Zap 
+} from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen">
+      <Navbar />
+      <Hero />
+      
+      {/* Zimplar Growth Pathways */}
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="absolute top-1/2 left-0 w-64 h-64 bg-z-red/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-black text-zinc-900 mb-6 tracking-tight">
+              A Platform for <span className="text-z-red underline decoration-z-gold/30 underline-offset-8">Every Impact</span>
+            </h2>
+            <p className="text-zinc-500 font-medium text-lg max-w-2xl mx-auto">
+              Whether you are a national government or an independent educator, Zimplar provides the 
+              specialized infrastructure to scale your mission.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Government Pathway */}
+            <div className="p-8 bg-zinc-50 rounded-[3rem] border border-zinc-100 hover:bg-white hover:shadow-2xl transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+              <div className="mb-6 bg-emerald-100 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Building className="w-8 h-8 text-emerald-600" />
+              </div>
+              <h3 className="text-2xl font-black text-zinc-900 mb-4">Governments</h3>
+              <p className="text-sm text-zinc-500 mb-8 leading-relaxed">Mass education suites for regional deployments with nationwide data management.</p>
+              <Link href="/dashboard/billing">
+                <button className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-z-red transition-all shadow-xl shadow-zinc-900/10">
+                  Institutional Onboarding
+                </button>
+              </Link>
+            </div>
+
+            {/* NGO Pathway */}
+            <div className="p-8 bg-zinc-50 rounded-[3rem] border border-zinc-100 hover:bg-white hover:shadow-2xl transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-z-red/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+              <div className="mb-6 bg-red-100 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="w-8 h-8 text-z-red" />
+              </div>
+              <h3 className="text-2xl font-black text-zinc-900 mb-4">NGOs & Charities</h3>
+              <p className="text-sm text-zinc-500 mb-8 leading-relaxed">Impact-first logic for rural schools with subsidies and donor reporting tools.</p>
+              <Link href="/dashboard/billing">
+                <button className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-z-red transition-all shadow-xl shadow-zinc-900/10">
+                  Impact Enrollment
+                </button>
+              </Link>
+            </div>
+
+            {/* Private School Pathway */}
+            <div className="p-8 bg-zinc-50 rounded-[3rem] border border-zinc-100 hover:bg-white hover:shadow-2xl transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-z-blue/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+              <div className="mb-6 bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-8 h-8 text-z-blue" />
+              </div>
+              <h3 className="text-2xl font-black text-zinc-900 mb-4">Private Schools</h3>
+              <p className="text-sm text-zinc-500 mb-8 leading-relaxed">Premium management with parent portals, advanced branding, and CRM tools.</p>
+              <Link href="/dashboard/billing">
+                <button className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-z-red transition-all shadow-xl shadow-zinc-900/10">
+                  School Activation
+                </button>
+              </Link>
+            </div>
+
+            {/* Individual Teacher Pathway */}
+            <div className="p-8 bg-zinc-900 rounded-[3rem] shadow-2xl group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+              <div className="mb-6 bg-white/10 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform border border-white/10">
+                <Zap className="w-8 h-8 text-z-gold" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-4">Teachers</h3>
+              <p className="text-sm text-zinc-400 mb-8 leading-relaxed">Monetize your expertise globally with direct student billing and live rooms.</p>
+              <Link href="/dashboard/billing">
+                <button className="w-full py-4 bg-white text-zinc-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-z-gold transition-all">
+                  Create Classroom
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Additional sections can be added here */}
+      <section className="py-20 bg-z-blue/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-z-red mb-4 uppercase tracking-wider">Why Choose Zimplar?</h2>
+          <div className="w-20 h-1 bg-z-gold mx-auto mb-8"></div>
+          <p className="text-z-gray max-w-2xl mx-auto text-lg">
+            We provide a world-class learning experience tailored for the unique challenges 
+            of the African digital landscape.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }

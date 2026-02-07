@@ -1,7 +1,28 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/admin/:path*',
+        destination: '/admin/:path*',
+        permanent: true,
+      },
+      {
+        source: '/admin/financials',
+        destination: '/admin/payments',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
