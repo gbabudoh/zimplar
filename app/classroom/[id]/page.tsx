@@ -2,8 +2,11 @@
 
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import JitsiPlayer from "@/components/video/JitsiPlayer";
-import OwncastPlayer from "@/components/video/OwncastPlayer";
+import SmartVideoPlayer from "@/components/video/SmartVideoPlayer";
+
+
+
+
 import { 
   Users, 
   MessageSquare, 
@@ -123,33 +126,25 @@ export default function ClassroomPage({ params }: { params: Promise<{ id: string
                )}
 
                {playerMode === "interactive" ? (
-                 <JitsiPlayer 
-                   roomName={id} 
+                 <SmartVideoPlayer 
+                   source={id} 
                    userName={session?.user?.name || "User"}
                    userEmail={session?.user?.email ?? undefined}
                    isModerator={isModerator}
+                   mode="interactive"
                  />
+
                ) : (
-                 <div className="relative">
-                   <OwncastPlayer />
-                   {isModerator && (
-                     <div className="absolute bottom-10 right-10 w-64 h-48 bg-slate-800 rounded-3xl border-4 border-white/20 shadow-2xl overflow-hidden z-30 group">
-                       <p className="absolute top-4 left-4 text-[8px] font-black text-white uppercase tracking-widest z-10 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-md">Local Preview (Broadcasting)</p>
-                       <video 
-                         id="local-broadcast-preview"
-                         autoPlay 
-                         muted 
-                         ref={(el) => {
-                           if (el && !el.srcObject) {
-                             navigator.mediaDevices.getUserMedia({ video: true }).then(s => el.srcObject = s);
-                           }
-                         }}
-                         className="w-full h-full object-cover"
-                       />
-                     </div>
-                   )}
-                 </div>
+                 <SmartVideoPlayer 
+                   source={id} 
+                   userName={session?.user?.name || "User"}
+                   userEmail={session?.user?.email ?? undefined}
+                   isModerator={isModerator}
+                   mode="broadcast"
+                 />
                )}
+
+
             </div>
         </div>
 

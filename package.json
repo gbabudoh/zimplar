@@ -11,7 +11,8 @@
   "dependencies": {
     "@auth/pg-adapter": "^1.11.1",
     "@auth/prisma-adapter": "^2.11.1",
-    "@jitsi/react-sdk": "^1.4.4",
+    "@livekit/components-react": "^2.9.20",
+    "@livekit/components-styles": "^1.2.0",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "@tensorflow-models/blazeface": "^0.1.0",
@@ -19,6 +20,8 @@
     "@tensorflow/tfjs": "^4.22.0",
     "dotenv": "^17.2.4",
     "hls.js": "^1.6.15",
+    "livekit-client": "^2.18.0",
+    "livekit-server-sdk": "^2.15.0",
     "lucide-react": "^0.563.0",
     "minio": "^8.0.6",
     "next": "^16.1.6",
