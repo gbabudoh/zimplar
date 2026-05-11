@@ -16,10 +16,9 @@ import {
   Loader2
 } from "lucide-react";
 import { updateOrganizationProfile, getOrganizationProfile } from "@/actions/monetization";
-// @ts-expect-error - Prisma client generation sync
 import { OrgType } from "@prisma/client";
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orgType = searchParams.get("org") as OrgType || "PRIVATE";
@@ -273,5 +272,17 @@ export default function OnboardingPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen mesh-bg flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-z-red animate-spin" />
+      </div>
+    }>
+      <OnboardingContent />
+    </React.Suspense>
   );
 }

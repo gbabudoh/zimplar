@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 import Credentials from "next-auth/providers/credentials";
 import prisma from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -19,7 +20,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       issuer: `https://login.microsoftonline.com/${process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID}/v2.0`,
     }),
     Credentials({
-      name: "Demo",
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
@@ -30,29 +31,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
 
-        // Stateless demo accounts for instant verification
-        if (email === "org@zimplar.com" && password === "org123") {
-          return { id: "org-demo", email, name: "Ministry Official", role: "ORG_ADMIN" };
-        }
+        // Check if user exists in database
+        const user = await prisma.user.findUnique({
+          where: { email }
+        });
 
-        if (email === "teacher@zimplar.com" && password === "teacher123") {
-          return { id: "teacher-demo", email, name: "Demo Teacher", role: "TEACHER" };
-        }
-
-        if (email === "student@zimplar.com" && password === "student123") {
-          return { id: "student-demo", email, name: "Demo Student", role: "STUDENT" };
-        }
-
-        if (email === "admin1@zimplar.com" && password === "admin123acess") {
-          return { id: "admin-demo", email, name: "Admin User", role: "ADMIN" };
-        }
-
-        if (email === "ngo@zimplar.com" && password === "ngo123") {
-          return { id: "ngo-demo", email, name: "Impact Director", role: "ORG_ADMIN" };
-        }
-
-        if (email === "private@zimplar.com" && password === "private123") {
-          return { id: "private-demo", email, name: "School Head", role: "SCHOOL" };
+        if (user && "password" in user && typeof user.password === "string") {
+          const isPasswordCorrect = await bcrypt.compare(password, user.password);
+          if (isPasswordCorrect) {
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role
+            };
+          }
         }
 
         return null;
@@ -63,16 +56,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // @ts-expect-error - role is on user
-        token.role = user.role;
+        if ("role" in user) {
+          token.role = user.role;
+        }
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = token.id as string;
-        // @ts-expect-error - role is on token
-        session.user.role = token.role as string;
+        if ("role" in token) {
+          (session.user as { id: string; role: string }).role = token.role as string;
+        }
       }
       return session;
     },

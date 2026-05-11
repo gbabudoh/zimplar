@@ -1,6 +1,5 @@
 import "server-only";
-import { PrismaClient } from "@prisma/client";
-// @ts-expect-error - Types might be missing in local environment
+import { PrismaClient } from "@prisma/client"; // Refreshing client types
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 

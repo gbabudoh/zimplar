@@ -25,6 +25,7 @@ model User {
   name          String?
   email         String          @unique
   emailVerified DateTime?
+  password      String?
   image         String?
   role          Role            @default(STUDENT)
   accounts      Account[]
@@ -46,6 +47,89 @@ model User {
   dataAllocation DataAllocation?
   transactions   Transaction[]
   organizationProfile OrganizationProfile?
+
+  // Gamification
+  stats         UserStats?
+  badges        UserBadge[]
+  
+  // Notifications
+  notifications Notification[]
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title       String
+  message     String
+  type        NotificationType @default(INFO)
+  category    NotificationCategory @default(SYSTEM)
+  isRead      Boolean  @default(false)
+  link        String?  // Optional redirection link
+  
+  createdAt   DateTime @default(now())
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum NotificationCategory {
+  SYSTEM
+  COURSE
+  BILLING
+  GAMIFICATION
+  SOCIAL
+}
+
+model UserStats {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  points        Int      @default(0)
+  level         Int      @default(1)
+  focusTime     Int      @default(0) // In minutes
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  lastActive    DateTime @default(now())
+  
+  updatedAt     DateTime @updatedAt
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String
+  icon        String      // Lucide icon name
+  criteria    String      // JSON string for logic or simple description
+  type        BadgeType   @default(MILESTONE)
+  
+  users       UserBadge[]
+  createdAt   DateTime    @default(now())
+}
+
+enum BadgeType {
+  MILESTONE
+  CONSISTENCY
+  ACADEMIC
+  SOCIAL
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  awardedAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
 }
 
 model Account {
@@ -201,6 +285,9 @@ model Enrollment {
   
   courseId      String
   course        Course       @relation(fields: [courseId], references: [id])
+
+  status        String       @default("ACTIVE") // ACTIVE, COMPLETED
+  progress      Int          @default(0) // 0 to 100
 
   @@unique([userId, courseId])
 }

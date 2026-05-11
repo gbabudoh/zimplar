@@ -10,8 +10,10 @@ import {
   HardDrive, 
   ArrowUpRight,
   Settings,
-  ShieldAlert
+  ShieldAlert,
+  Bell
 } from "lucide-react";
+import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -28,8 +30,9 @@ export default function AdminDashboardPage() {
             </h1>
             <p className="text-zinc-500 font-medium">System Overview & Global Controls</p>
           </div>
-          <div className="flex items-center space-x-4">
-             <div className="bg-white px-4 py-2 rounded-xl flex items-center space-x-2 border border-zinc-100 shadow-sm">
+          <div className="flex items-center space-x-6">
+             <NotificationDropdown />
+             <div className="bg-white px-4 py-2.5 rounded-xl flex items-center space-x-2 border border-zinc-100 shadow-sm">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                 <span className="text-xs font-black text-zinc-600 uppercase tracking-widest">System Healthy</span>
              </div>

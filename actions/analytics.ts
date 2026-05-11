@@ -33,17 +33,14 @@ export async function getPlatformAnalytics() {
       prisma.user.count({ where: { role: Role.TEACHER } }),
       prisma.user.count({ where: { role: Role.STUDENT } }),
       prisma.course.count(),
-      // @ts-expect-error - Prisma model name "Transaction" collides with internal methods in some IDEs
       prisma.transaction.aggregate({
         _count: true,
         _sum: { amount: true }
       }),
-      // @ts-expect-error - Prisma model "AIAlert" pending full IDE type synchronization
       prisma.aIAlert.count()
     ]);
 
     // Aggregate revenue by plan type
-    // @ts-expect-error - Prisma model "Subscription" pending full IDE type synchronization
     const revenueByPlan = await prisma.subscription.groupBy({
       by: ['planType'],
       _sum: { amount: true },

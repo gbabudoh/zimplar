@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { Search, Filter, Clock, Star, Users, PlayCircle } from "lucide-react";
@@ -90,6 +90,9 @@ const mockCourses = [
 
 export default function StudentExplorePage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const filteredCourses = selectedCategory === "All"
+    ? mockCourses
+    : mockCourses.filter((c) => c.category === selectedCategory);
 
   return (
     <div className="min-h-screen mesh-bg flex font-sans selection:bg-z-red selection:text-white">
@@ -144,7 +147,7 @@ export default function StudentExplorePage() {
 
           {/* Courses Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockCourses.map((course) => (
+            {filteredCourses.map((course) => (
               <div 
                 key={course.id}
                 className="group bg-white rounded-[2rem] border border-zinc-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"

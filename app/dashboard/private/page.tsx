@@ -13,6 +13,7 @@ import {
   Smartphone,
   Palette
 } from "lucide-react";
+import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
 
 // Mock Data for Private School View
 const schoolStats = [
@@ -47,20 +48,13 @@ export default function PrivateSchoolDashboard() {
             <p className="text-zinc-800 font-bold ml-1">Premium oversight: Parent portals, CRM tools, and brand identity.</p>
           </div>
           
-          <div className="flex space-x-4">
-            <Link href="/dashboard/billing">
-              <button className="px-6 py-3 bg-white border border-zinc-100 rounded-xl font-black text-xs uppercase tracking-widest text-zinc-600 hover:shadow-lg transition-all flex items-center space-x-2">
-                <Palette className="w-4 h-4 text-z-red" />
-                <span>Branding Kit</span>
-              </button>
-            </Link>
+            <NotificationDropdown />
             <Link href="/dashboard/billing">
               <button className="px-6 py-3 bg-zinc-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-zinc-500/20 hover:scale-[1.02] transition-all flex items-center space-x-2">
                 <MessageSquare className="w-4 h-4 text-z-blue" />
                 <span>Launch Campaign</span>
               </button>
             </Link>
-          </div>
         </header>
 
         {/* School-specific Metrics */}

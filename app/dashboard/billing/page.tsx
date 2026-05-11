@@ -24,16 +24,7 @@ import {
   topUpData,
   getDataAllocation
 } from "@/actions/monetization";
-// @ts-expect-error - Prisma client generation sync
-import { PlanType, OrgType } from "@prisma/client";
-
-interface Subscription {
-  id: string;
-  planType: string;
-  orgType: string;
-  amount: number;
-  endDate: Date;
-}
+import { PlanType, OrgType, Subscription } from "@prisma/client";
 
 interface Transaction {
   id: string;
@@ -248,7 +239,7 @@ export default function BillingPage() {
                    </div>
                    <h2 className="text-4xl font-black mb-2">{currentSub.orgType} {currentSub.planType}</h2>
                    <p className="text-zinc-400 font-medium tracking-tight flex items-center space-x-2">
-                       <span>Renews on {new Date(currentSub.endDate).toLocaleDateString()}</span>
+                       <span>Renews on {currentSub.endDate ? new Date(currentSub.endDate).toLocaleDateString() : "Permanent"}</span>
                        <span className="w-1 h-1 bg-zinc-700 rounded-full"></span>
                        <span>${currentSub.amount}/mo</span>
                    </p>

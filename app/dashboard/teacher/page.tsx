@@ -10,10 +10,10 @@ import {
   Plus, 
   Video, 
   Search, 
-  Bell,
   ChevronRight,
   MoreVertical
 } from "lucide-react";
+import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
 
 export default function TeacherDashboard() {
   return (
@@ -42,10 +42,7 @@ export default function TeacherDashboard() {
               />
             </div>
             
-            <button className="relative p-2 text-zinc-400 hover:text-z-red transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-z-red rounded-full"></span>
-            </button>
+            <NotificationDropdown />
 
             <button className="flex items-center space-x-3 bg-z-red text-white pr-6 pl-5 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.15em] hover:bg-z-red/90 transition-all shadow-2xl shadow-z-red/20 group">
               <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />

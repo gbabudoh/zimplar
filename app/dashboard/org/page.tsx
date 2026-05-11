@@ -8,13 +8,14 @@ import {
   Users, 
   Zap, 
   MapPin,
-  ShieldCheck,
   BarChart3,
   Globe,
   ArrowUpRight,
   Sprout,
-  Building2
+  Building2,
+  Bell
 } from "lucide-react";
+import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
 
 // Mock Data for Institutional View
 const stats = [
@@ -56,19 +57,12 @@ export default function InstitutionalSuitePage() {
             <p className="text-zinc-600 font-medium ml-1">Nationwide education management and regional impact metrics.</p>
           </div>
           
-          <div className="flex space-x-4">
-            <Link href="/dashboard/org/audit">
-              <button className="px-6 py-3 bg-white border border-zinc-100 rounded-xl font-black text-xs uppercase tracking-widest text-zinc-600 hover:shadow-lg transition-all flex items-center space-x-2">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Compliance Audit</span>
-              </button>
-            </Link>
+            <NotificationDropdown />
             <Link href="/dashboard/org/schools">
               <button className="px-6 py-3 bg-zinc-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-zinc-500/20 hover:scale-[1.02] transition-all">
                 Provision New School
               </button>
             </Link>
-          </div>
         </header>
 
         {/* Global Key Metrics */}

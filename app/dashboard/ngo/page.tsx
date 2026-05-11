@@ -5,12 +5,12 @@ import Link from "next/link";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { 
   Building, 
-  BarChart3,
   HeartHandshake,
   Sprout,
   Coins,
   ArrowUpRight
 } from "lucide-react";
+import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
 
 // Mock Data for NGO Impact View
 const impactStats = [
@@ -51,20 +51,13 @@ export default function NGOImpactHubPage() {
             <p className="text-zinc-600 font-medium ml-1">Manage donor relations and rural education subsidies.</p>
           </div>
           
-          <div className="flex space-x-4">
-            <Link href="/dashboard/ngo/impact">
-              <button className="px-6 py-3 bg-white border border-zinc-100 rounded-xl font-black text-xs uppercase tracking-widest text-zinc-600 hover:shadow-lg transition-all flex items-center space-x-2">
-                <BarChart3 className="w-4 h-4" />
-                <span>Impact Report</span>
-              </button>
-            </Link>
+            <NotificationDropdown />
             <Link href="/dashboard/ngo/schools">
               <button className="px-6 py-3 bg-zinc-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-zinc-500/20 hover:scale-[1.02] transition-all flex items-center space-x-2">
                 <Coins className="w-4 h-4 text-z-gold" />
                 <span>Allocate Grant</span>
               </button>
             </Link>
-          </div>
         </header>
 
         {/* Key Impact Metrics */}

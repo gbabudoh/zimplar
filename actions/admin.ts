@@ -9,6 +9,7 @@ interface SystemFeatures {
   registration: boolean;
   maintenance: boolean;
   betaFeatures: boolean;
+  [key: string]: boolean | string | number | null | undefined;
 }
 
 /**
@@ -27,7 +28,6 @@ async function checkAdmin() {
 
 export async function getSiteSettings() {
   try {
-    // @ts-expect-error - Property exists at runtime after generation
     const settings = await prisma.siteSettings.findFirst();
     return settings;
   } catch (error) {
@@ -45,11 +45,9 @@ export async function updateSiteSettings(data: {
   await checkAdmin();
   
   try {
-    // @ts-expect-error - Property exists at runtime after generation
     const current = await prisma.siteSettings.findFirst();
     
     if (current) {
-      // @ts-expect-error - Pending Prisma Client generation sync
       const updated = await prisma.siteSettings.update({
         where: { id: current.id },
         data
@@ -57,7 +55,6 @@ export async function updateSiteSettings(data: {
       revalidatePath("/");
       return updated;
     } else {
-      // @ts-expect-error - Pending Prisma Client generation sync
       const created = await prisma.siteSettings.create({
         data: {
           heroTitle: data.heroTitle || "Welcome to Zimplar",

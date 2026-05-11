@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
-import { GraduationCap, Mail, Lock, ArrowRight, ShieldCheck, Users, Loader2, Building, HeartHandshake } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
@@ -26,7 +26,7 @@ const LoginPage = () => {
     });
 
     if (result?.error) {
-      setError("Invalid credentials. Try the demo buttons below!");
+      setError("Invalid email or password. Please try again.");
       setLoading(false);
     } else {
       router.refresh();
@@ -157,120 +157,6 @@ const LoginPage = () => {
               <Image src="https://www.microsoft.com/favicon.ico" width={16} height={16} className="w-4 h-4" alt="Microsoft" />
               <span>Microsoft</span>
             </button>
-          </div>
-
-          {/* Demo Logins */}
-          <div className="mt-8 pt-8 border-t border-z-blue/10 space-y-4 relative z-10">
-            <h3 className="text-[10px] font-black text-z-gray flex items-center space-x-2 tracking-widest uppercase ml-1">
-              <ShieldCheck className="w-3 h-3 text-z-red" />
-              <span>Demo Access</span>
-            </h3>
-            <div className="grid grid-cols-1 gap-3">
-              <button 
-                onClick={() => signIn("credentials", { 
-                  email: "teacher@zimplar.com", 
-                  password: "teacher123",
-                  callbackUrl: "/dashboard/teacher",
-                  redirect: true
-                })}
-                className="w-full flex items-center justify-between p-4 bg-z-red/5 hover:bg-z-red/10 border border-z-red/10 rounded-[1.5rem] transition-all group cursor-pointer"
-              >
-                <div className="flex items-center space-x-3">
-                   <div className="bg-z-red p-2.5 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
-                      <GraduationCap className="w-4 h-4" />
-                   </div>
-                   <div className="text-left">
-                      <p className="text-xs font-black text-z-red uppercase tracking-tighter">Teacher Demo</p>
-                      <p className="text-[10px] text-z-gray/60 font-bold">Use: teacher@zimplar.com / teacher123</p>
-                   </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-z-red group-hover:translate-x-1 transition-transform" />
-              </button>
-
-              <button 
-                onClick={() => signIn("credentials", { 
-                  email: "student@zimplar.com", 
-                  password: "student123",
-                  callbackUrl: "/dashboard/student",
-                  redirect: true
-                })}
-                className="w-full flex items-center justify-between p-4 bg-z-blue/5 hover:bg-z-blue/10 border border-z-blue/10 rounded-[1.5rem] transition-all group cursor-pointer"
-              >
-                <div className="flex items-center space-x-3">
-                   <div className="bg-z-blue p-2.5 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
-                      <Users className="w-4 h-4" />
-                   </div>
-                   <div className="text-left">
-                      <p className="text-xs font-black text-z-blue uppercase tracking-tighter">Student Demo</p>
-                      <p className="text-[10px] text-z-gray/60 font-bold">Use: student@zimplar.com / student123</p>
-                   </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-z-blue group-hover:translate-x-1 transition-transform" />
-              </button>
-
-              <button 
-                onClick={() => signIn("credentials", { 
-                  email: "org@zimplar.com", 
-                  password: "org123",
-                  callbackUrl: "/dashboard/org",
-                  redirect: true
-                })}
-                className="w-full flex items-center justify-between p-4 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-[1.5rem] transition-all group cursor-pointer"
-              >
-                <div className="flex items-center space-x-3">
-                   <div className="bg-emerald-500 p-2.5 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
-                      <Building className="w-4 h-4" />
-                   </div>
-                   <div className="text-left">
-                      <p className="text-xs font-black text-emerald-600 uppercase tracking-tighter">Institutional Demo</p>
-                      <p className="text-[10px] text-z-gray/60 font-bold">Use: org@zimplar.com / org123</p>
-                   </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-emerald-500 group-hover:translate-x-1 transition-transform" />
-              </button>
-
-              <button 
-                onClick={() => signIn("credentials", { 
-                  email: "ngo@zimplar.com", 
-                  password: "ngo123",
-                  callbackUrl: "/dashboard/ngo",
-                  redirect: true
-                })}
-                className="w-full flex items-center justify-between p-4 bg-amber-50 hover:bg-amber-100 border border-amber-100 rounded-[1.5rem] transition-all group cursor-pointer"
-              >
-                <div className="flex items-center space-x-3">
-                   <div className="bg-amber-500 p-2.5 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
-                      <HeartHandshake className="w-4 h-4" />
-                   </div>
-                   <div className="text-left">
-                      <p className="text-xs font-black text-amber-600 uppercase tracking-tighter">NGO Impact Demo</p>
-                      <p className="text-[10px] text-z-gray/60 font-bold">Use: ngo@zimplar.com / ngo123</p>
-                   </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-amber-500 group-hover:translate-x-1 transition-transform" />
-              </button>
-
-              <button 
-                onClick={() => signIn("credentials", { 
-                  email: "private@zimplar.com", 
-                  password: "private123",
-                  callbackUrl: "/dashboard/private",
-                  redirect: true
-                })}
-                className="w-full flex items-center justify-between p-4 bg-z-blue/5 hover:bg-z-blue/10 border border-z-blue/10 rounded-[1.5rem] transition-all group cursor-pointer"
-              >
-                <div className="flex items-center space-x-3">
-                   <div className="bg-z-blue p-2.5 rounded-xl text-white shadow-lg group-hover:scale-110 transition-transform">
-                      <ShieldCheck className="w-4 h-4" />
-                   </div>
-                   <div className="text-left">
-                      <p className="text-xs font-black text-z-blue uppercase tracking-tighter">Private School Demo</p>
-                      <p className="text-[10px] text-z-gray/60 font-bold">Use: private@zimplar.com / private123</p>
-                   </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-z-blue group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
           </div>
         </div>
 

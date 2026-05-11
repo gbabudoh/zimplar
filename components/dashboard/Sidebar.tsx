@@ -19,9 +19,11 @@ import {
   Sprout,
   ShieldCheck,
   Smartphone,
-  Palette
+  Palette,
+  Sparkles
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
+import UserGamification from "./UserGamification";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -34,6 +36,7 @@ const teacherLinks: NavItem[] = [
   { icon: <BookOpen className="w-5 h-5" />, label: "My Courses", href: "/dashboard/teacher/courses" },
   { icon: <Users className="w-5 h-5" />, label: "Classrooms", href: "/dashboard/teacher/classrooms" },
   { icon: <ClipboardList className="w-5 h-5" />, label: "Grading", href: "/dashboard/teacher/grading" },
+  { icon: <Sparkles className="w-5 h-5" />, label: "Content Creator", href: "/dashboard/teacher/content" },
   { icon: <Calendar className="w-5 h-5" />, label: "Live Sessions", href: "/dashboard/teacher/sessions" },
   { icon: <CreditCard className="w-5 h-5" />, label: "Billing Hub", href: "/dashboard/billing" },
 ];
@@ -86,7 +89,6 @@ export default function Sidebar({ role: initialRole }: SidebarProps) {
   const pathname = usePathname();
   
   // Use session role as source of truth, fallback to prop if loading or unavailable
-  // @ts-expect-error - role is on user
   const effectiveRole = session?.user?.role || initialRole;
   // Check path OR specific NGO demo email to persist nav on shared pages (billing)
   const isNgoContext = pathname?.startsWith("/dashboard/ngo") || session?.user?.email === "ngo@zimplar.com";
@@ -134,6 +136,13 @@ export default function Sidebar({ role: initialRole }: SidebarProps) {
           );
         })}
       </nav>
+
+      {/* Gamification Engine (Student Only) */}
+      {effectiveRole === "STUDENT" && (
+        <div className="px-2 mb-6">
+           <UserGamification />
+        </div>
+      )}
 
       {/* Bottom Actions */}
       <div className="pt-6 mt-6 border-t border-zinc-100 space-y-1">
