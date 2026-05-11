@@ -104,7 +104,14 @@ export default function Sidebar({ role: initialRole }: SidebarProps) {
     <aside className="w-64 h-[calc(100vh-2rem)] fixed left-4 top-4 bg-white/70 backdrop-blur-2xl border border-white/40 p-6 flex flex-col z-50 rounded-[2.5rem] shadow-2xl shadow-z-red/5">
       {/* Branding */}
       <div className="flex items-center justify-center mb-10 px-2">
-        <Link href="/">
+        <Link href={
+          effectiveRole === "TEACHER" ? "/dashboard/teacher" :
+          effectiveRole === "ADMIN" ? "/admin" :
+          effectiveRole === "ORG_ADMIN" ? "/dashboard/org" :
+          effectiveRole === "NGO" ? "/dashboard/ngo" :
+          effectiveRole === "SCHOOL" ? "/dashboard/private" :
+          "/dashboard/student"
+        }>
            <Image src="/zimplarlogo.png" alt="Zimplar" width={128} height={128} className="w-32 h-32 object-contain hover:scale-105 transition-transform" />
         </Link>
       </div>

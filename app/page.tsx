@@ -12,7 +12,21 @@ import {
   ChevronRight
 } from "lucide-react";
 
-export default function Home() {
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+
+export default async function Home() {
+  const session = await auth();
+
+  if (session?.user) {
+    const role = (session.user as { role?: string })?.role;
+    let dashboardPath = "/dashboard/student";
+    if (role === "ADMIN") dashboardPath = "/admin";
+    else if (role === "TEACHER") dashboardPath = "/dashboard/teacher";
+    else if (role === "ORG_ADMIN") dashboardPath = "/dashboard/org";
+    return redirect(dashboardPath);
+  }
+
   return (
     <main className="min-h-screen">
       <Navbar />

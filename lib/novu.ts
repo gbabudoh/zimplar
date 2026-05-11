@@ -18,7 +18,7 @@ export const novu = novuApiKey
 export async function triggerNotification(
   workflowId: string,
   userId: string,
-  payload: Record<string, unknown>
+  payload: Record<string, string | number | boolean | undefined | null>
 ) {
   if (!novu) {
     console.warn("Novu is not configured. Skipping notification trigger.");
@@ -26,11 +26,12 @@ export async function triggerNotification(
   }
 
   try {
-    await novu.trigger(workflowId, {
+    const novuClient = novu as unknown as { trigger: (id: string, args: unknown) => Promise<unknown> };
+    await novuClient.trigger(workflowId, {
       to: {
         subscriberId: userId,
       },
-      payload: payload,
+      payload: payload as unknown as Record<string, string | number | boolean | undefined | null>,
     });
   } catch (error) {
     console.error("Novu trigger failed:", error);

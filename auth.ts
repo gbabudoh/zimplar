@@ -1,28 +1,15 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import Google from "next-auth/providers/google";
-import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
-import Credentials from "next-auth/providers/credentials";
 import prisma from "@/lib/db";
 import bcrypt from "bcryptjs";
+import { authConfig } from "./auth.config";
+import Credentials from "next-auth/providers/credentials";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
-  session: { 
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours
-  },
   providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
-    }),
-    MicrosoftEntraID({
-      clientId: process.env.AUTH_MICROSOFT_ENTRA_ID_ID,
-      clientSecret: process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET,
-      issuer: `https://login.microsoftonline.com/${process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID}/v2.0`,
-    }),
+    ...authConfig.providers.filter(p => p.id !== "credentials"),
     Credentials({
       name: "Credentials",
       credentials: {
@@ -40,7 +27,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email }
         });
 
-        if (user && "password" in user && typeof user.password === "string") {
+        if (user && "password" in user && typeof user.password === "string" && user.password) {
           const isPasswordCorrect = await bcrypt.compare(password, user.password);
           if (isPasswordCorrect) {
             return {
@@ -56,27 +43,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        if ("role" in user) {
-          token.role = user.role;
-        }
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user && token) {
-        session.user.id = token.id as string;
-        if ("role" in token) {
-          (session.user as { id: string; role: string }).role = token.role as string;
-        }
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/login",
-  },
 });

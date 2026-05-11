@@ -10,7 +10,8 @@ export async function getNotifications() {
   if (!session?.user?.id) return [];
 
   try {
-    const notifications = await (prisma as unknown as { notification: { findMany: (args: unknown) => Promise<unknown[]> } }).notification.findMany({
+    const db = prisma as unknown as { Notification: { findMany: (args: unknown) => Promise<unknown[]> } };
+    const notifications = await db.Notification.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
       take: 20,
@@ -27,7 +28,8 @@ export async function markAsRead(id: string) {
   if (!session?.user?.id) return;
 
   try {
-    await (prisma as unknown as { notification: { update: (args: unknown) => Promise<unknown> } }).notification.update({
+    const db = prisma as unknown as { Notification: { update: (args: unknown) => Promise<unknown> } };
+    await db.Notification.update({
       where: { id, userId: session.user.id },
       data: { isRead: true },
     });
@@ -42,7 +44,8 @@ export async function markAllAsRead() {
   if (!session?.user?.id) return;
 
   try {
-    await (prisma as unknown as { notification: { updateMany: (args: unknown) => Promise<unknown> } }).notification.updateMany({
+    const db = prisma as unknown as { Notification: { updateMany: (args: unknown) => Promise<unknown> } };
+    await db.Notification.updateMany({
       where: { userId: session.user.id, isRead: false },
       data: { isRead: true },
     });
@@ -62,7 +65,8 @@ export async function createNotification(data: {
   link?: string;
 }) {
   try {
-    const notification = await (prisma as unknown as { notification: { create: (args: unknown) => Promise<unknown> } }).notification.create({
+    const db = prisma as unknown as { Notification: { create: (args: unknown) => Promise<unknown> } };
+    const notification = await db.Notification.create({
       data: {
         userId: data.userId,
         title: data.title,
