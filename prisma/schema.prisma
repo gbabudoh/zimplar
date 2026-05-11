@@ -209,6 +209,7 @@ model Course {
   teacher       User            @relation("TeacherCourses", fields: [teacherId], references: [id])
   
   classrooms    Classroom[]     @relation("ClassroomCourses")
+  category      String          @default("General")
   lessons       Lesson[]
   enrollments   Enrollment[]
   assessments   Assessment[]
