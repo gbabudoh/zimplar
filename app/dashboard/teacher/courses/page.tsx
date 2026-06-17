@@ -15,6 +15,8 @@ import { auth } from "@/auth";
 import db from "@/lib/db";
 import { redirect } from "next/navigation";
 
+const prisma = db as any;
+
 export default async function TeacherCoursesPage() {
   const session = await auth();
 
@@ -28,7 +30,7 @@ export default async function TeacherCoursesPage() {
   }
 
   // Fetch actual courses created by this teacher
-  const coursesData = await db.course.findMany({
+  const coursesData = await prisma.course.findMany({
     where: {
       teacherId: session.user.id,
     },
@@ -56,7 +58,7 @@ export default async function TeacherCoursesPage() {
     "General": "bg-zinc-500",
   };
 
-  const courses = coursesData.map((course) => {
+  const courses = coursesData.map((course: any) => {
     const image = course.thumbnail || fallbackImages[Math.abs(course.title.charCodeAt(0)) % fallbackImages.length];
     const color = categoryColors[course.category] || "bg-z-red";
     return {
@@ -128,7 +130,7 @@ export default async function TeacherCoursesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-            {courses.map((course) => (
+            {courses.map((course: any) => (
               <div key={course.id} className="glass-card rounded-[3rem] overflow-hidden group hover:translate-y-[-8px] transition-all duration-500 flex flex-col premium-shadow">
                 {/* Image Preview */}
                 <div className="relative h-56 w-full overflow-hidden">
