@@ -1,18 +1,36 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-const LoginPage = () => {
+const LoginForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const expired = searchParams.get("expired");
+  const messageParam = searchParams.get("message");
+
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
+
+  React.useEffect(() => {
+    if (expired) {
+      signOut({ redirect: false }).then(() => {
+        router.replace("/login?message=session-expired");
+      });
+    }
+  }, [expired, router]);
+
+  React.useEffect(() => {
+    if (messageParam === "session-expired") {
+      setError("Your session has expired (e.g. database reset). Please log in again.");
+    }
+  }, [messageParam]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,4 +190,14 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <Loader2 className="w-8 h-8 text-z-red animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
+  );
+}

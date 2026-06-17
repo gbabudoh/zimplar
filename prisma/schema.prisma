@@ -28,6 +28,13 @@ model User {
   password      String?
   image         String?
   role          Role            @default(STUDENT)
+  bio           String?
+  twoFactorEnabled Boolean         @default(false)
+  theme         String          @default("Light")
+  language      String          @default("English (US)")
+  notifCourseSub Boolean         @default(true)
+  notifLiveReminder Boolean       @default(true)
+  notifSystemUpdate Boolean       @default(false)
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime        @default(now())

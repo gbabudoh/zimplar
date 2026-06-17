@@ -42,7 +42,8 @@ export default auth((req) => {
   const email = req.auth?.user?.email || "";
 
   // If user is logged in and tries to access login/signup/landing pages, redirect to dashboard
-  if (isAuthRoute) {
+  // unless we explicitly want them to clear their session (e.g. ?expired=true)
+  if (isAuthRoute && !nextUrl.searchParams.has("expired")) {
     const dashboardPath = getDashboardRedirectUrl(role, email);
     return NextResponse.redirect(new URL(dashboardPath, nextUrl));
   }
