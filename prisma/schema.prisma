@@ -35,6 +35,8 @@ model User {
   notifCourseSub Boolean         @default(true)
   notifLiveReminder Boolean       @default(true)
   notifSystemUpdate Boolean       @default(false)
+  twoFactorCode     String?
+  twoFactorCodeExpires DateTime?
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime        @default(now())

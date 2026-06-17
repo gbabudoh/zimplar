@@ -4,8 +4,9 @@ import React, { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn, signOut } from "next-auth/react";
-import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { preLoginCheck } from "@/actions/auth";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -15,6 +16,8 @@ const LoginForm = () => {
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [show2FA, setShow2FA] = React.useState(false);
+  const [twoFactorCode, setTwoFactorCode] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
 
@@ -37,14 +40,39 @@ const LoginForm = () => {
     setLoading(true);
     setError("");
 
+    if (!show2FA) {
+      // 1. Run Pre-login 2FA Check
+      try {
+        const check = await preLoginCheck(email, password);
+        if (check.error) {
+          setError(check.error);
+          setLoading(false);
+          return;
+        }
+
+        if (check.twoFactorRequired) {
+          setShow2FA(true);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error(error);
+        setError("Login check failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 2. Execute Sign In with NextAuth credentials provider
     const result = await signIn("credentials", {
       email,
       password,
+      code: show2FA ? twoFactorCode : undefined,
       redirect: false,
     });
 
     if (result?.error) {
-      setError("Invalid email or password. Please try again.");
+      setError(show2FA ? "Invalid or expired verification code." : "Invalid email or password. Please try again.");
       setLoading(false);
     } else {
       router.refresh();
@@ -94,44 +122,82 @@ const LoginForm = () => {
               </div>
             )}
             
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-z-gray ml-1">Email Address</label>
-              <div className="relative group/field">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                  <Mail className="w-5 h-5 text-z-gray group-focus-within/field:text-z-red transition-colors" />
+            {!show2FA ? (
+              <>
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-z-gray ml-1">Email Address</label>
+                  <div className="relative group/field">
+                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                      <Mail className="w-5 h-5 text-z-gray group-focus-within/field:text-z-red transition-colors" />
+                    </div>
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@company.com"
+                      className="w-full bg-white/60 backdrop-blur-md border border-z-blue/20 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-z-red/20 focus:border-z-red transition-all shadow-sm group-hover/field:border-z-red/30"
+                      required
+                    />
+                  </div>
                 </div>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  className="w-full bg-white/60 backdrop-blur-md border border-z-blue/20 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-z-red/20 focus:border-z-red transition-all shadow-sm group-hover/field:border-z-red/30"
-                  required
-                />
-              </div>
-            </div>
 
-            {/* Password Field */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1">
-                <label className="text-sm font-semibold text-z-gray">Password</label>
-                <Link href="/forgot-password" className="text-xs font-bold text-z-red hover:underline cursor-pointer">Forgot password?</Link>
-              </div>
-              <div className="relative group/field">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                  <Lock className="w-5 h-5 text-z-gray group-focus-within/field:text-z-red transition-colors" />
+                {/* Password Field */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center ml-1">
+                    <label className="text-sm font-semibold text-z-gray">Password</label>
+                    <Link href="/forgot-password" className="text-xs font-bold text-z-red hover:underline cursor-pointer">Forgot password?</Link>
+                  </div>
+                  <div className="relative group/field">
+                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                      <Lock className="w-5 h-5 text-z-gray group-focus-within/field:text-z-red transition-colors" />
+                    </div>
+                    <input 
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-white/60 backdrop-blur-md border border-z-blue/20 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-z-red/20 focus:border-z-red transition-all shadow-sm group-hover/field:border-z-red/30"
+                      required
+                    />
+                  </div>
                 </div>
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-white/60 backdrop-blur-md border border-z-blue/20 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-z-red/20 focus:border-z-red transition-all shadow-sm group-hover/field:border-z-red/30"
-                  required
-                />
+              </>
+            ) : (
+              /* Two-Factor Authentication Code Field */
+              <div className="space-y-2 animate-fade-in">
+                <div className="flex justify-between items-center ml-1">
+                  <label className="text-sm font-semibold text-z-gray">Verification Code</label>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setShow2FA(false);
+                      setTwoFactorCode("");
+                      setError("");
+                    }}
+                    className="text-xs font-bold text-z-red hover:underline cursor-pointer"
+                  >
+                    Back to password
+                  </button>
+                </div>
+                <div className="relative group/field">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <ShieldCheck className="w-5 h-5 text-z-gray group-focus-within/field:text-z-red transition-colors" />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={twoFactorCode}
+                    onChange={(e) => setTwoFactorCode(e.target.value)}
+                    placeholder="Enter 6-digit code"
+                    maxLength={6}
+                    pattern="\d{6}"
+                    className="w-full bg-white/60 backdrop-blur-md border border-z-blue/20 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-z-red/20 focus:border-z-red transition-all shadow-sm group-hover/field:border-z-red/30 tracking-[0.25em] text-center font-bold text-lg placeholder:tracking-normal placeholder:font-normal placeholder:text-sm"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-z-gray ml-1 mt-1">We sent a secure code to your registered email.</p>
               </div>
-            </div>
+            )}
 
             {/* Submit Button */}
             <button 
@@ -142,7 +208,7 @@ const LoginForm = () => {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <span>Sign In</span>
+                  <span>{show2FA ? "Verify & Sign In" : "Sign In"}</span>
                   <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform cursor-pointer" />
                 </>
               )}

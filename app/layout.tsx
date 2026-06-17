@@ -82,7 +82,30 @@ export default function RootLayout({
   const matomoSiteId = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var savedTheme = localStorage.getItem('theme');
+                  if (!savedTheme) {
+                    savedTheme = document.cookie.match(/theme=([^;]+)/)?.[1] || 'Light';
+                  }
+                  if (savedTheme === 'Dark' || (savedTheme === 'System' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-theme', 'Dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.setAttribute('data-theme', 'Light');
+                  }
+                } catch (e) {}
+              })();
+            `
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

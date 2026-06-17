@@ -121,3 +121,73 @@ export async function resetPassword(token: string, newPassword: string) {
     return { error: "An unexpected error occurred. Please try again." };
   }
 }
+
+/**
+ * Checks email & password before sign-in to see if 2FA challenge is required.
+ * If 2FA is enabled, generates a 6-digit code, saves it to the user, and sends it to their email.
+ */
+export async function preLoginCheck(email: string, password: string) {
+  if (!email || !password) {
+    return { error: "Email and password are required." };
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+
+  try {
+    const user = await db.user.findUnique({
+      where: { email: normalizedEmail }
+    });
+
+    if (!user || !user.password) {
+      return { error: "Invalid email or password." };
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return { error: "Invalid email or password." };
+    }
+
+    if (user.twoFactorEnabled) {
+      // Generate secure 6-digit verification code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const expires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes validity
+
+      await db.user.update({
+        where: { id: user.id },
+        data: {
+          twoFactorCode: code,
+          twoFactorCodeExpires: expires
+        }
+      });
+
+      // Send 2FA email
+      const html = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px;">
+          <h2 style="color: #552121; text-align: center;">Zimplar Security Check</h2>
+          <p>Hello,</p>
+          <p>You are receiving this email because two-factor authentication is active on your Zimplar account. Enter the 6-digit verification code below to authorize your session.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #552121; background-color: #f8d2ce; padding: 12px 24px; border-radius: 8px; border: 1px solid #f8d2ce;">${code}</span>
+          </div>
+          <p>This verification code is valid for <strong>5 minutes</strong>. If you did not initiate this login request, please change your password immediately to protect your account.</p>
+          <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
+          <p style="font-size: 12px; color: #6b7280; text-align: center;">Secured by Zimplar Identity Management</p>
+        </div>
+      `;
+
+      await sendEmail({
+        to: user.email,
+        subject: `[${code}] Your Zimplar 2FA Code`,
+        html,
+        text: `Your Zimplar 2FA verification code is: ${code}`,
+      });
+
+      return { twoFactorRequired: true };
+    }
+
+    return { twoFactorRequired: false };
+  } catch (error) {
+    console.error("2FA Precheck Error:", error);
+    return { error: "An unexpected error occurred. Please try again." };
+  }
+}

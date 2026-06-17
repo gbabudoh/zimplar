@@ -93,6 +93,33 @@ export default function SettingsClientView({ user }: SettingsClientViewProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Synchronize visual theme classes and cookies/localstorage with active state
+  React.useEffect(() => {
+    const root = document.documentElement;
+    
+    const applyTheme = (currentTheme: string) => {
+      const isDark = currentTheme === 'Dark' || (currentTheme === 'System' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) {
+        root.classList.add('dark');
+        root.setAttribute('data-theme', 'Dark');
+      } else {
+        root.classList.remove('dark');
+        root.setAttribute('data-theme', 'Light');
+      }
+      localStorage.setItem('theme', currentTheme);
+      document.cookie = `theme=${currentTheme}; path=/; max-age=31536000`;
+    };
+
+    applyTheme(theme);
+
+    if (theme === 'System') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => applyTheme('System');
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, [theme]);
+
   const tabs = [
     { id: "profile", label: "Profile", icon: <User className="w-5 h-5" /> },
     { id: "security", label: "Security", icon: <Shield className="w-5 h-5" /> },
@@ -195,20 +222,28 @@ export default function SettingsClientView({ user }: SettingsClientViewProps) {
   };
 
   // Two-Factor Toggle
-  const handleTwoFactorToggle = async (checked: boolean) => {
-    setTwoFactor(checked);
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+  const handleTwoFactorToggle = async () => {
+    if (twoFactorLoading) return;
+    const newValue = !twoFactor;
+    console.log("[2FA] Toggling to:", newValue);
+    setTwoFactorLoading(true);
+    setTwoFactor(newValue);
     try {
-      const res = await updateUserSecurity({ twoFactorEnabled: checked });
+      const res = await updateUserSecurity({ twoFactorEnabled: newValue });
+      console.log("[2FA] Server response:", res);
       if (res.error) {
         showToast(res.error, "error");
-        setTwoFactor(!checked);
+        setTwoFactor(!newValue);
       } else {
-        showToast(`Two-factor authentication ${checked ? "enabled" : "disabled"}`, "success");
+        showToast(`Two-factor authentication ${newValue ? "enabled" : "disabled"}`, "success");
       }
     } catch (error) {
-      console.error(error);
+      console.error("[2FA] Error:", error);
       showToast("Failed to update security settings", "error");
-      setTwoFactor(!checked);
+      setTwoFactor(!newValue);
+    } finally {
+      setTwoFactorLoading(false);
     }
   };
 
@@ -492,14 +527,33 @@ export default function SettingsClientView({ user }: SettingsClientViewProps) {
                            <p className="text-xs text-zinc-500 font-medium">Add an extra layer of security to your account logins.</p>
                         </div>
                      </div>
-                     <div className="relative inline-flex items-center cursor-pointer">
-                        <input 
-                          type="checkbox" 
-                          className="sr-only peer" 
-                          checked={twoFactor}
-                          onChange={(e) => handleTwoFactorToggle(e.target.checked)}
+                     <div
+                        onClick={handleTwoFactorToggle}
+                        style={{
+                          width: 56,
+                          height: 32,
+                          borderRadius: 9999,
+                          backgroundColor: twoFactor ? '#552121' : '#d4d4d8',
+                          position: 'relative',
+                          cursor: twoFactorLoading ? 'wait' : 'pointer',
+                          transition: 'background-color 0.2s ease',
+                          opacity: twoFactorLoading ? 0.6 : 1,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 9999,
+                            backgroundColor: '#fff',
+                            position: 'absolute',
+                            top: 4,
+                            left: twoFactor ? 28 : 4,
+                            transition: 'left 0.2s ease',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                          }}
                         />
-                        <div className="w-14 h-8 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-z-red"></div>
                      </div>
                   </div>
                 </div>

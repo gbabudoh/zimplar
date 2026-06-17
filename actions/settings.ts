@@ -126,17 +126,20 @@ export async function updateUserPassword(data: {
  * Toggles two-factor authentication.
  */
 export async function updateUserSecurity(data: { twoFactorEnabled: boolean }) {
-  const session = await checkAuth();
-  const userId = session.user.id;
-
   try {
-    const updatedUser = await db.user.update({
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { error: "You must be logged in to change security settings." };
+    }
+    const userId = session.user.id;
+
+    await db.user.update({
       where: { id: userId },
       data: { twoFactorEnabled: data.twoFactorEnabled },
     });
 
     revalidatePath("/settings");
-    return { success: true, user: updatedUser };
+    return { success: true };
   } catch (error) {
     console.error("[SETTINGS_SECURITY] Update failed:", error);
     return { error: "Failed to update security settings." };

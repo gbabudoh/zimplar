@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -11,6 +13,19 @@
   --z-rose: #f8d2ce;
   --z-blue: #529c9f;
   --z-white: #ffffff;
+}
+
+:root.dark, :root[data-theme="Dark"], html.dark, [data-theme="Dark"] {
+  --background: #09090b;
+  --foreground: #f4f4f5;
+
+  /* Zimplar Palette in Dark Mode */
+  --z-gray: #a1a1aa;
+  --z-red: #ea580c;
+  --z-gold: #fbbf24;
+  --z-rose: #18181b;
+  --z-blue: #06b6d4;
+  --z-white: #18181b;
 }
 
 @theme inline {
@@ -96,6 +111,24 @@
     box-shadow:
       0 4px 6px -1px rgba(0, 0, 0, 0.05),
       0 10px 30px -5px rgba(124, 57, 57, 0.03);
+  }
+
+  .dark .mesh-bg {
+    background-color: #09090b;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(234, 88, 12, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(234, 179, 8, 0.04) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(6, 182, 212, 0.05) 0px, transparent 50%),
+      linear-gradient(135deg, rgba(9, 9, 11, 0) 0%, rgba(9, 9, 11, 0.9) 100%);
+  }
+
+  .dark .glass-card {
+    background: rgba(24, 24, 27, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.4),
+      0 10px 30px -5px rgba(0, 0, 0, 0.5);
   }
 
   .premium-shadow {

@@ -101,7 +101,7 @@ export default function Sidebar({ role: initialRole }: SidebarProps) {
                 studentLinks;
 
   return (
-    <aside className="w-64 h-[calc(100vh-2rem)] fixed left-4 top-4 bg-white/70 backdrop-blur-2xl border border-white/40 p-6 flex flex-col z-50 rounded-[2.5rem] shadow-2xl shadow-z-red/5">
+    <aside className="w-64 h-[calc(100vh-2rem)] fixed left-4 top-4 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl border border-white/40 dark:border-zinc-800/40 p-6 flex flex-col z-50 rounded-[2.5rem] shadow-2xl shadow-z-red/5 dark:shadow-black/40">
       {/* Branding */}
       <div className="flex items-center justify-center mb-10 px-2">
         <Link href={
@@ -118,7 +118,7 @@ export default function Sidebar({ role: initialRole }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-grow space-y-2">
-        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] ml-3 mb-6">Main Analytics</p>
+        <p className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] ml-3 mb-6">Main Analytics</p>
         
         {links.map((link) => {
           const isActive = pathname === link.href;
@@ -129,11 +129,11 @@ export default function Sidebar({ role: initialRole }: SidebarProps) {
               className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 group ${
                 isActive 
                 ? "bg-z-red text-white shadow-xl shadow-z-red/20 scale-[1.02]" 
-                : "text-zinc-600 hover:bg-z-red/5 hover:text-z-red"
+                : "text-zinc-600 dark:text-zinc-400 hover:bg-z-red/5 dark:hover:bg-z-red/10 hover:text-z-red"
               }`}
             >
               <div className="flex items-center space-x-3">
-                <span className={`${isActive ? "text-white" : "text-zinc-400 group-hover:text-z-red"} transition-colors`}>
+                <span className={`${isActive ? "text-white" : "text-zinc-400 dark:text-zinc-500 group-hover:text-z-red"} transition-colors`}>
                   {link.icon}
                 </span>
                 <span className="font-bold text-sm tracking-tight">{link.label}</span>
@@ -152,17 +152,17 @@ export default function Sidebar({ role: initialRole }: SidebarProps) {
       )}
 
       {/* Bottom Actions */}
-      <div className="pt-6 mt-6 border-t border-zinc-100 space-y-1">
+      <div className="pt-6 mt-6 border-t border-zinc-100 dark:border-zinc-800 space-y-1">
         <Link 
           href="/settings"
-          className="flex items-center space-x-3 p-4 rounded-2xl text-zinc-600 hover:bg-white/50 transition-all font-bold text-sm hover:scale-[1.02]"
+          className="flex items-center space-x-3 p-4 rounded-2xl text-zinc-600 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all font-bold text-sm hover:scale-[1.02]"
         >
-          <Settings className="w-5 h-5 text-zinc-400" />
+          <Settings className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />
           <span>General Settings</span>
         </Link>
         <button 
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="w-full flex items-center space-x-3 p-4 rounded-2xl text-z-red hover:bg-z-red/5 transition-all font-black text-xs uppercase tracking-widest cursor-pointer"
+          className="w-full flex items-center space-x-3 p-4 rounded-2xl text-z-red hover:bg-z-red/5 dark:hover:bg-z-red/10 transition-all font-black text-xs uppercase tracking-widest cursor-pointer"
         >
           <LogOut className="w-5 h-5" />
           <span>Sign Out</span>
