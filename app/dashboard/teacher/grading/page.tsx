@@ -72,9 +72,8 @@ export default async function TeacherGradingPage() {
           course: {
             select: {
               title: true,
-                },
-              },
-          dueDate: true,
+            },
+          },
         },
       },
     },
