@@ -125,3 +125,33 @@ function calculateTimeRemaining(dueDate: Date | null) {
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   return `${days} days`;
 }
+
+export async function createAssessment(formData: { title: string; description: string; type: "QUIZ" | "EXAM" | "PROJECT"; dueDate?: string; courseId: string }) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const role = (session.user as { role?: string })?.role;
+  if (role !== "TEACHER" && role !== "ADMIN") {
+    throw new Error("Forbidden");
+  }
+
+  try {
+    const db = prisma as any;
+    const assessment = await db.assessment.create({
+      data: {
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+        courseId: formData.courseId,
+      },
+    });
+
+    return { success: true, assessment };
+  } catch (error: any) {
+    console.error("Failed to create assessment:", error);
+    return { success: false, error: error.message || "Failed to create assessment" };
+  }
+}
