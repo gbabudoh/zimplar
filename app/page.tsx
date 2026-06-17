@@ -29,6 +29,29 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            "name": "Zimplar",
+            "url": "https://www.zimplar.com",
+            "logo": "https://www.zimplar.com/zimplarlogo.png",
+            "description": "Zimplar is a multi-tenant digital schooling and remote education platform tailored for Africa. It empowers governments, NGOs, private schools, and individual teachers with high-fidelity live rooms, billing, and AI proctoring.",
+            "sameAs": [
+              "https://twitter.com/zimplar",
+              "https://linkedin.com/company/zimplar"
+            ],
+            "offers": {
+              "@type": "AggregateOffer",
+              "priceCurrency": "USD",
+              "lowPrice": "0.00",
+              "category": "Education Infrastructure"
+            }
+          }),
+        }}
+      />
       <Navbar />
       <Hero />
       

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import * as Minio from "minio";
+import { auth } from "@/auth";
 
 const minioClient = new Minio.Client({
   endPoint: process.env.MINIO_ENDPOINT || "localhost",
@@ -13,6 +14,11 @@ const BUCKET_NAME = "zimplar-assignments";
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { filename } = await request.json();
 
     if (!filename) {

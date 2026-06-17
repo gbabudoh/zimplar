@@ -8,11 +8,28 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
+  turbopack: {},
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.google.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.microsoft.com",
+      },
+      {
+        protocol: "https",
+        hostname: "avatar.auth.microsoft.com",
       },
     ],
   },

@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AccessToken } from 'livekit-server-sdk';
+import { auth } from '@/auth';
 
 export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const room = req.nextUrl.searchParams.get('room');
   const username = req.nextUrl.searchParams.get('username');
 
