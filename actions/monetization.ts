@@ -185,7 +185,7 @@ export async function getOrganizationProfile() {
 export async function getDataAllocation() {
   const session = await checkAuth();
   try {
-    const allocation = await prisma.dataAllocation.findUnique({
+    let allocation = await prisma.dataAllocation.findUnique({
       where: { userId: session.user.id },
       include: {
         purchases: {
@@ -194,6 +194,20 @@ export async function getDataAllocation() {
         }
       }
     });
+
+    if (!allocation) {
+      allocation = await prisma.dataAllocation.create({
+        data: {
+          userId: session.user.id,
+          totalCapGB: 5.0,
+          usedGB: 0.0
+        },
+        include: {
+          purchases: true
+        }
+      }) as any;
+    }
+
     return allocation;
   } catch (error) {
     console.error("[MONETIZATION_DATA] Fetch failed:", error);
