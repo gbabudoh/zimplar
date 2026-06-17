@@ -214,3 +214,35 @@ export async function getDataAllocation() {
     return null;
   }
 }
+
+export async function simulateDataUsage(gbAmount: number) {
+  const session = await checkAuth();
+  const userId = session.user.id;
+
+  try {
+    let allocation = await prisma.dataAllocation.findUnique({
+      where: { userId }
+    });
+
+    if (!allocation) {
+      allocation = await prisma.dataAllocation.create({
+        data: { userId, totalCapGB: 5.0, usedGB: 0.0 }
+      });
+    }
+
+    const newUsedGB = Math.min(allocation.usedGB + gbAmount, allocation.totalCapGB);
+    
+    await prisma.dataAllocation.update({
+      where: { id: allocation.id },
+      data: {
+        usedGB: newUsedGB
+      }
+    });
+
+    revalidatePath("/dashboard/billing");
+    return { success: true };
+  } catch (error) {
+    console.error("[MONETIZATION_DATA] Simulation failed:", error);
+    throw new Error("Simulation failed.");
+  }
+}

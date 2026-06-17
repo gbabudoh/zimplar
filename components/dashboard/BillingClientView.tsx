@@ -14,14 +14,16 @@ import {
   Database,
   ArrowUpRight,
   TrendingUp,
-  Clock
+  Clock,
+  Download
 } from "lucide-react";
 import { 
   createSubscription, 
   getUserSubscription, 
   getUserTransactions, 
   topUpData,
-  getDataAllocation
+  getDataAllocation,
+  simulateDataUsage
 } from "@/actions/monetization";
 import { PlanType, OrgType, Subscription } from "@prisma/client";
 
@@ -112,6 +114,20 @@ export default function BillingClientView({
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const [showCheckout, setShowCheckout] = useState<{ open: boolean; item: CheckoutItem | null }>({ open: false, item: null });
   const [showInvoice, setShowInvoice] = useState<{ open: boolean; tx: Transaction | null }>({ open: false, tx: null });
+  const [isSimulating, setIsSimulating] = useState(false);
+
+  const handleSimulateUsage = async () => {
+    setIsSimulating(true);
+    try {
+      await simulateDataUsage(0.5);
+      const alloc = await getDataAllocation();
+      setAllocation(alloc as unknown as Allocation);
+    } catch (error) {
+      console.error("Simulation failed:", error);
+    } finally {
+      setIsSimulating(false);
+    }
+  };
 
   const handleSubscribe = (tier: typeof tiers[0]) => {
     setShowCheckout({ open: true, item: { ...tier, category: 'SUBSCRIPTION' } });
@@ -180,27 +196,35 @@ export default function BillingClientView({
            <p className="text-zinc-500 font-medium ml-1">Manage subscriptions, data allocation, and transaction history.</p>
         </div>
         
-        <div className="flex space-x-4">
-           <div className="bg-white/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/50 shadow-sm flex items-center space-x-4">
-              <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center">
-                 <Database className="w-4 h-4 text-purple-600" />
-              </div>
-              <div>
-                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Remaining Data</p>
-                 <p className="text-sm font-black text-zinc-800 tracking-tight">
-                    {allocation ? (allocation.totalCapGB - allocation.usedGB).toFixed(1) : "..." } GB
-                 </p>
-              </div>
-           </div>
-           <button 
-              onClick={handleTopUp}
-              disabled={isProcessing === "TOPUP"}
-              className={`px-6 py-3 bg-zinc-900 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-900/20 cursor-pointer flex items-center space-x-2 ${isProcessing === "TOPUP" ? "opacity-70" : ""}`}
-           >
-              {isProcessing === "TOPUP" ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Zap className="w-4 h-4 text-amber-400" />}
-              <span>Top up 10GB</span>
-           </button>
-        </div>
+         <div className="flex space-x-4">
+            <div className="bg-white/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/50 shadow-sm flex items-center space-x-4">
+               <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center">
+                  <Database className="w-4 h-4 text-purple-600" />
+               </div>
+               <div>
+                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Remaining Data</p>
+                  <p className="text-sm font-black text-zinc-800 tracking-tight">
+                     {allocation ? (allocation.totalCapGB - allocation.usedGB).toFixed(1) : "..." } GB
+                  </p>
+               </div>
+            </div>
+            <button 
+               onClick={handleSimulateUsage}
+               disabled={isSimulating || (allocation ? (allocation.totalCapGB - allocation.usedGB) <= 0 : false)}
+               className="px-6 py-3 bg-white border border-zinc-200 text-zinc-700 rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 hover:bg-zinc-50 transition-all shadow-sm cursor-pointer flex items-center space-x-2 disabled:opacity-50"
+            >
+               {isSimulating ? <div className="w-4 h-4 border-2 border-zinc-300 border-t-zinc-700 rounded-full animate-spin"></div> : <Download className="w-4 h-4 text-zinc-400" />}
+               <span>Simulate 0.5GB Use</span>
+            </button>
+            <button 
+               onClick={handleTopUp}
+               disabled={isProcessing === "TOPUP"}
+               className={`px-6 py-3 bg-zinc-900 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-900/20 cursor-pointer flex items-center space-x-2 ${isProcessing === "TOPUP" ? "opacity-70" : ""}`}
+            >
+               {isProcessing === "TOPUP" ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Zap className="w-4 h-4 text-amber-400" />}
+               <span>Top up 10GB</span>
+            </button>
+         </div>
       </header>
 
       {/* Current Subscription Banner */}
