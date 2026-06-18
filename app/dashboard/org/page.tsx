@@ -1,8 +1,9 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
 import Sidebar from "@/components/dashboard/Sidebar";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import db from "@/lib/db";
 import { 
   Building, 
   Users, 
@@ -12,36 +13,78 @@ import {
   Globe,
   ArrowUpRight,
   Sprout,
-  Building2,
-  Bell
+  Building2
 } from "lucide-react";
 import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
+import ClassroomRegionToggle from "@/components/dashboard/ClassroomRegionToggle";
 
-// Mock Data for Institutional View
-const stats = [
-  { label: "Active Schools", value: "124", icon: Building, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-  { label: "Regional Classrooms", value: "3,842", icon: Globe, color: "text-z-blue", bg: "bg-z-blue/10" },
-  { label: "Total Students", value: "48.2k", icon: Users, color: "text-purple-500", bg: "bg-purple-500/10" },
-  { label: "Rural Reach", value: "42%", icon: Sprout, color: "text-amber-600", bg: "bg-amber-600/10" },
-];
+export default async function InstitutionalSuitePage() {
+  const session = await auth();
 
-const regionalPerformance = [
-  { region: "Greater Accra", schools: 45, engagement: "92%", status: "OPTIMAL" },
-  { region: "Ashanti", schools: 38, engagement: "88%", status: "GROWING" },
-  { region: "Western", schools: 22, engagement: "74%", status: "ALERT" },
-  { region: "Central", schools: 19, engagement: "81%", status: "OPTIMAL" },
-];
+  if (!session?.user?.id) {
+    return redirect("/login");
+  }
 
-const recentEvents = [
-  { id: 1, type: "VERIFICATION", org: "District Edu Board", event: "Standardization Audit Passed", time: "2 hours ago" },
-  { id: 2, type: "SUBSIDY", org: "Rural Literacy NGO", event: "Data Voucher Batch Released", time: "5 hours ago" },
-  { id: 3, type: "ONBOARDING", org: "Methodist Academy", event: "School Instance Provisioned", time: "1 day ago" },
-];
+  // Fetch real org profile
+  const orgProfile = await db.organizationProfile.findUnique({
+    where: { userId: session.user.id },
+  });
 
-export default function InstitutionalSuitePage() {
+  // Fetch real subscription
+  const subscription = await db.subscription.findFirst({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Fetch real data allocation
+  const dataAllocation = await db.dataAllocation.findUnique({
+    where: { userId: session.user.id },
+  });
+
+  // Fetch classrooms managed by this user (teacher/org admin)
+  const managedClassrooms = await db.classroom.findMany({
+    where: { teacherId: session.user.id },
+    include: { students: true, courses: true },
+  });
+
+  // Fetch all courses created by this user
+  const courses = await db.course.findMany({
+    where: { teacherId: session.user.id },
+    include: { enrollments: true },
+  });
+
+  // Compute stats from real data
+  const totalClassrooms = managedClassrooms.length;
+  const totalStudents = managedClassrooms.reduce((acc, c) => acc + c.students.length, 0);
+  const totalCourses = courses.length;
+  const totalEnrollments = courses.reduce((acc, c) => acc + c.enrollments.length, 0);
+
+  const usedGB = dataAllocation?.usedGB ?? 0;
+  const totalCapGB = dataAllocation?.totalCapGB ?? 5;
+  const usagePercent = totalCapGB > 0 ? Math.round((usedGB / totalCapGB) * 100) : 0;
+
+  // Fetch recent transactions as audit events
+  const recentTransactions = await db.transaction.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  });
+
+  const classroomBreakdown = [...managedClassrooms]
+    .sort((a, b) => b.students.length - a.students.length)
+    .slice(0, 5);
+  const maxClassroomStudents = Math.max(1, ...classroomBreakdown.map((c) => c.students.length));
+
+  const stats = [
+    { label: "Classrooms", value: String(totalClassrooms), icon: Building, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Courses", value: String(totalCourses), icon: Globe, color: "text-z-blue", bg: "bg-z-blue/10" },
+    { label: "Total Students", value: String(totalStudents), icon: Users, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Enrollments", value: String(totalEnrollments), icon: Sprout, color: "text-amber-600", bg: "bg-amber-600/10" },
+  ];
+
   return (
     <div className="min-h-screen mesh-bg flex font-sans selection:bg-z-red selection:text-white pb-20">
-      <Sidebar />
+      <Sidebar role="ORG_ADMIN" />
       
       <main className="flex-grow p-10 ml-72">
         <header className="mb-12 flex justify-between items-end">
@@ -54,15 +97,19 @@ export default function InstitutionalSuitePage() {
                 Institutional <span className="text-z-red">Suite</span>
               </h1>
             </div>
-            <p className="text-zinc-600 font-medium ml-1">Nationwide education management and regional impact metrics.</p>
+            <p className="text-zinc-600 font-medium ml-1">
+              {orgProfile?.name ? `${orgProfile.name} — ` : ""}Education management and impact metrics.
+            </p>
           </div>
           
+          <div className="flex items-center space-x-4">
             <NotificationDropdown />
             <Link href="/dashboard/org/schools">
               <button className="px-6 py-3 bg-zinc-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-zinc-500/20 hover:scale-[1.02] transition-all">
                 Provision New School
               </button>
             </Link>
+          </div>
         </header>
 
         {/* Global Key Metrics */}
@@ -85,59 +132,76 @@ export default function InstitutionalSuitePage() {
               <div className="absolute top-0 right-0 w-96 h-96 bg-z-red/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
               <div className="relative z-10 flex justify-between items-start mb-10">
                 <div>
-                  <h3 className="text-2xl font-black tracking-tight mb-1">Regional Impact Map</h3>
-                   <p className="text-zinc-400 text-sm font-medium">Real-time engagement density across deployment zones.</p>
+                  <h3 className="text-2xl font-black tracking-tight mb-1">Network Overview</h3>
+                   <p className="text-zinc-400 text-sm font-medium">Student distribution across your busiest classrooms.</p>
                 </div>
                 <div className="flex space-x-2">
-                  <div className="bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">Live Sync</div>
+                  <div className="bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">{totalClassrooms} Classrooms</div>
                 </div>
               </div>
-              
-              {/* Visual Map Placeholder */}
-              <div className="relative z-10 w-full aspect-video bg-white/5 rounded-[2rem] border border-white/10 flex items-center justify-center">
-                 <div className="text-center group cursor-crosshair">
-                   <div className="w-20 h-20 bg-z-red/20 rounded-full flex items-center justify-center animate-ping absolute opacity-20"></div>
-                   <div className="w-20 h-20 bg-z-red/40 rounded-full flex items-center justify-center relative">
-                      <MapPin className="w-8 h-8 text-z-red group-hover:scale-125 transition-transform" />
-                   </div>
-                   <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">Scanning Nodes...</p>
-                 </div>
-              </div>
+
+              {classroomBreakdown.length > 0 ? (
+                <div className="relative z-10 space-y-5">
+                  {classroomBreakdown.map((c) => (
+                    <div key={c.id}>
+                      <div className="flex justify-between items-end mb-2">
+                        <p className="text-xs font-black text-white tracking-tight">{c.name}</p>
+                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{c.students.length} Students</p>
+                      </div>
+                      <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                        <div
+                          className="h-full bg-gradient-to-r from-z-red to-z-gold shadow-[0_0_20px_rgba(255,27,47,0.3)]"
+                          style={{ width: `${Math.round((c.students.length / maxClassroomStudents) * 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="relative z-10 w-full aspect-video bg-white/5 rounded-[2rem] border border-white/10 flex items-center justify-center">
+                  <div className="text-center">
+                    <MapPin className="w-8 h-8 text-zinc-500 mx-auto" />
+                    <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-400">No classrooms yet</p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Performance Ledger */}
+            {/* Managed Classrooms */}
             <div className="bg-white rounded-[3rem] p-10 shadow-xl border border-zinc-100">
                 <div className="flex justify-between items-center mb-10">
-                   <h3 className="text-2xl font-black text-zinc-800 tracking-tight">Deployment Performance</h3>
+                   <h3 className="text-2xl font-black text-zinc-800 tracking-tight">Managed Classrooms</h3>
                    <Link href="/dashboard/org/analytics">
-                      <button className="text-xs font-black text-z-blue border-b-2 border-z-blue/20 hover:border-z-blue transition-all pb-0.5">Regional Metrics</button>
+                      <button className="text-xs font-black text-z-blue border-b-2 border-z-blue/20 hover:border-z-blue transition-all pb-0.5">View Analytics</button>
                    </Link>
                 </div>
                
                <div className="space-y-4">
-                  {regionalPerformance.map((p, i) => (
-                    <div key={i} className="flex items-center justify-between p-6 bg-zinc-50 rounded-3xl border border-zinc-100 hover:bg-white hover:shadow-lg transition-all group">
-                       <div className="flex items-center space-x-6">
-                          <Building2 className="w-8 h-8 text-z-red" />
-                          <div>
-                             <p className="text-lg font-black text-zinc-800">{p.region}</p>
-                             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{p.schools} Managed Schools</p>
-                          </div>
-                       </div>
-                       <div className="flex items-center space-x-10 text-right">
-                          <div>
-                             <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Engagement</p>
-                             <p className="font-black text-zinc-800">{p.engagement}</p>
-                          </div>
-                          <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${
-                            p.status === 'OPTIMAL' ? 'bg-emerald-100 text-emerald-600' : 
-                            p.status === 'ALERT' ? 'bg-red-100 text-z-red' : 'bg-blue-100 text-z-blue'
-                          }`}>
-                            {p.status}
-                          </div>
-                       </div>
+                  {managedClassrooms.length > 0 ? (
+                    managedClassrooms.map((c) => (
+                      <div key={c.id} className="flex items-center justify-between p-6 bg-zinc-50 rounded-3xl border border-zinc-100 hover:bg-white hover:shadow-lg transition-all group">
+                         <div className="flex items-center space-x-6">
+                            <Building2 className="w-8 h-8 text-z-red" />
+                            <div>
+                               <p className="text-lg font-black text-zinc-800">{c.name}</p>
+                               <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{c.students.length} Students • {c.courses.length} Courses</p>
+                            </div>
+                         </div>
+                         <div className="flex items-center space-x-4 text-right">
+                            <ClassroomRegionToggle classroomId={c.id} regionType={c.regionType} />
+                            <div className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-600">
+                              Active
+                            </div>
+                         </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <Building2 className="w-10 h-10 text-zinc-200 mx-auto mb-4" />
+                      <p className="text-sm font-bold text-zinc-400">No classrooms managed yet.</p>
+                      <p className="text-[10px] text-zinc-300 font-medium mt-1">Provision schools and create classrooms to see them here.</p>
                     </div>
-                  ))}
+                  )}
                </div>
             </div>
           </div>
@@ -149,53 +213,63 @@ export default function InstitutionalSuitePage() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-z-red/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                 <div className="flex items-center space-x-3 mb-8 relative z-10">
                   <BarChart3 className="w-5 h-5 text-z-red" />
-                  <h3 className="text-lg font-black text-white tracking-tight">Shared Data Pool</h3>
+                  <h3 className="text-lg font-black text-white tracking-tight">Data Allocation</h3>
                 </div>
                 
                 <div className="space-y-6 relative z-10">
                    <div>
                       <div className="flex justify-between items-end mb-3">
-                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Global Quota</p>
-                         <p className="text-2xl font-black text-white">1.2 / 2.5 TB</p>
+                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Storage Quota</p>
+                         <p className="text-2xl font-black text-white">{usedGB.toFixed(1)} / {totalCapGB.toFixed(1)} GB</p>
                       </div>
                       <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-                         <div className="h-full bg-gradient-to-r from-z-red to-z-gold w-[48%] shadow-[0_0_20px_rgba(255,27,47,0.3)]"></div>
+                         <div className="h-full bg-gradient-to-r from-z-red to-z-gold shadow-[0_0_20px_rgba(255,27,47,0.3)]" style={{ width: `${usagePercent}%` }}></div>
                       </div>
                    </div>
                    
-                   <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">System prediction shows 15% growth in data demand for Ashanti region next month.</p>
+                   <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">
+                     {subscription ? `Plan: ${subscription.planType} • Status: ${subscription.status}` : "No active subscription."}
+                   </p>
                    
                    <Link href="/dashboard/billing">
                       <button className="w-full py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest border border-white/10 transition-all">
-                         Review Shared Billing
+                         Review Billing
                       </button>
                    </Link>
                 </div>
              </div>
 
-             {/* Verification Ledger */}
+             {/* Recent Activity */}
              <div className="bg-white rounded-[3rem] p-8 shadow-xl border border-zinc-100">
                 <div className="flex items-center justify-between mb-8">
-                   <h3 className="text-lg font-black text-zinc-800 tracking-tight">Security Audit</h3>
+                   <h3 className="text-lg font-black text-zinc-800 tracking-tight">Recent Activity</h3>
                    <Link href="/dashboard/org/audit">
-                      <div className="bg-z-red/10 text-z-red px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest animate-pulse cursor-pointer hover:bg-z-red hover:text-white transition-all">Full Audit Ledger</div>
+                      <div className="bg-z-red/10 text-z-red px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest cursor-pointer hover:bg-z-red hover:text-white transition-all">Full Audit</div>
                    </Link>
                 </div>
                 
                 <div className="space-y-6">
-                   {recentEvents.map(event => (
-                     <div key={event.id} className="relative pl-6 border-l-2 border-zinc-100 last:border-0 pb-2">
-                        <div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-z-red shadow-[0_0_10px_rgba(255,27,47,0.4)]"></div>
-                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">{event.time} — {event.type}</p>
-                        <p className="text-xs font-bold text-zinc-800 leading-tight">{event.event}</p>
-                        <p className="text-[9px] text-z-blue font-black mt-1 uppercase tracking-tighter">{event.org}</p>
+                   {recentTransactions.length > 0 ? (
+                     recentTransactions.map(tx => (
+                       <div key={tx.id} className="relative pl-6 border-l-2 border-zinc-100 last:border-0 pb-2">
+                          <div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-z-red shadow-[0_0_10px_rgba(255,27,47,0.4)]"></div>
+                          <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">
+                            {new Date(tx.createdAt).toLocaleDateString()} — {tx.type}
+                          </p>
+                          <p className="text-xs font-bold text-zinc-800 leading-tight">
+                            {tx.currency} {tx.amount.toFixed(2)} • {tx.status}
+                          </p>
+                          {tx.reference && (
+                            <p className="text-[9px] text-z-blue font-black mt-1 uppercase tracking-tighter">Ref: {tx.reference}</p>
+                          )}
+                       </div>
+                     ))
+                   ) : (
+                     <div className="text-center py-8">
+                       <p className="text-xs font-bold text-zinc-400">No recent activity.</p>
                      </div>
-                   ))}
+                   )}
                 </div>
-                
-                <button className="w-full mt-8 py-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">
-                   System Health Monitor
-                </button>
              </div>
 
              {/* Quick Actions */}

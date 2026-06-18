@@ -33,7 +33,15 @@ interface Transaction {
   reference: string | null;
   createdAt: Date;
   amount: number;
+  status: string;
 }
+
+const STATUS_STYLES: Record<string, string> = {
+  COMPLETED: "bg-emerald-50 border-emerald-100 text-emerald-600",
+  PENDING: "bg-amber-50 border-amber-100 text-amber-600",
+  FAILED: "bg-rose-50 border-rose-100 text-rose-600",
+  REFUNDED: "bg-zinc-100 border-zinc-200 text-zinc-500",
+};
 
 interface Allocation {
   totalCapGB: number;
@@ -244,7 +252,7 @@ export default function BillingClientView({
                      <span>${currentSub.amount}/mo</span>
                  </p>
               </div>
-              <button className="px-8 py-4 bg-white text-zinc-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-white/10 cursor-pointer">
+              <button disabled title="Coming soon" className="px-8 py-4 bg-white/40 text-zinc-500 rounded-2xl font-black text-xs uppercase tracking-widest cursor-not-allowed">
                  Modify Plan
               </button>
            </div>
@@ -301,7 +309,7 @@ export default function BillingClientView({
                   <History className="w-5 h-5 text-zinc-400" />
                   <h3 className="text-xl font-black text-zinc-800">Transaction History</h3>
                </div>
-               <button className="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-z-red transition-colors cursor-pointer">Export CSV</button>
+               <button disabled title="Coming soon" className="text-[10px] font-black text-zinc-300 uppercase tracking-widest cursor-not-allowed">Export CSV</button>
             </div>
             <div className="overflow-x-auto">
                <table className="w-full">
@@ -356,22 +364,24 @@ export default function BillingClientView({
                   <h3 className="text-lg font-black">Ecosystem Impact</h3>
                </div>
                <p className="text-xs font-medium text-emerald-100 mb-6 leading-relaxed">
-                 Every Premium and Enterprise subscription contributes to the 
-                 <span className="font-black text-white ml-1 underline decoration-emerald-400/50 underline-offset-4">Rural Africa Learning Fund</span>.
+                 Impact reporting for Premium and Enterprise subscriptions is in development.
                </p>
-               <button className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-white/80 hover:text-white transition-colors">
+               <button disabled title="Coming soon" className="flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-white/50 cursor-not-allowed">
                   <span>Read Impact Report</span>
                   <ArrowUpRight className="w-3 h-3" />
                </button>
             </div>
 
             <div className="bg-white p-8 rounded-[2.5rem] border border-zinc-100 shadow-xl relative overflow-hidden">
-               <div className="flex items-center space-x-3 mb-6">
-                  <Clock className="w-5 h-5 text-z-red" />
-                  <h3 className="text-lg font-black text-zinc-800">Next Audit</h3>
+               <div className="flex items-center justify-between mb-6">
+                 <div className="flex items-center space-x-3">
+                    <Clock className="w-5 h-5 text-z-red" />
+                    <h3 className="text-lg font-black text-zinc-800">Next Audit</h3>
+                 </div>
+                 <span className="text-[8px] font-black text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-0.5 rounded uppercase tracking-widest">Soon</span>
                </div>
-               <p className="text-xs font-bold text-zinc-500 mb-2">March 01, 2026</p>
-               <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">Your account will be automatically audited for compliance with the Charity/Gov whitelist enrollment policies.</p>
+               <p className="text-xs font-bold text-zinc-400 mb-2">Not yet scheduled</p>
+               <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">Automated compliance audits for Charity/Gov whitelist enrollment policies are not yet active.</p>
             </div>
          </div>
       </div>
@@ -414,7 +424,7 @@ export default function BillingClientView({
                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Card Details</p>
                            <p className="text-xs font-bold text-zinc-800">4242 •••• •••• 4242</p>
                         </div>
-                        <button className="text-[10px] font-black text-z-red uppercase tracking-widest">Change</button>
+                        <button disabled title="Coming soon" className="text-[10px] font-black text-zinc-300 uppercase tracking-widest cursor-not-allowed">Change</button>
                      </div>
                   </div>
 
@@ -462,9 +472,9 @@ export default function BillingClientView({
                      </div>
                      <div className="text-right">
                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Status</p>
-                        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100">
-                           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                           <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Completed</span>
+                        <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full border ${STATUS_STYLES[showInvoice.tx.status] || STATUS_STYLES.PENDING}`}>
+                           <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
+                           <span className="text-[10px] font-black uppercase tracking-widest">{showInvoice.tx.status}</span>
                         </div>
                      </div>
                   </div>

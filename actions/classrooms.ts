@@ -43,3 +43,24 @@ export async function createClassroom(formData: { name: string; description?: st
     return { success: false, error: error.message || "Failed to create classroom" };
   }
 }
+
+export async function setClassroomRegion(classroomId: string, regionType: "URBAN" | "RURAL") {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const classroom = await db.classroom.findUnique({ where: { id: classroomId } });
+  if (!classroom || classroom.teacherId !== session.user.id) {
+    throw new Error("Forbidden");
+  }
+
+  await db.classroom.update({
+    where: { id: classroomId },
+    data: { regionType },
+  });
+
+  revalidatePath("/dashboard/org");
+  revalidatePath("/dashboard/org/analytics");
+  return { success: true };
+}

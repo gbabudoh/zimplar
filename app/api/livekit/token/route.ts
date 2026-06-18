@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AccessToken } from 'livekit-server-sdk';
 import { auth } from '@/auth';
+import db from '@/lib/db';
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -45,7 +46,18 @@ export async function GET(req: NextRequest) {
     roomAdmin: isModerator,
   });
 
-
+  try {
+    const lesson = await db.lesson.findFirst({ where: { videoUrl: room } });
+    await db.videoSession.create({
+      data: {
+        userId: session.user.id,
+        roomName: room,
+        lessonId: lesson?.id,
+      },
+    });
+  } catch (e) {
+    console.error('Failed to log video session:', e);
+  }
 
   return NextResponse.json({ token: await at.toJwt() });
 }

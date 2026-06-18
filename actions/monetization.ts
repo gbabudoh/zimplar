@@ -230,12 +230,25 @@ export async function simulateDataUsage(gbAmount: number) {
       });
     }
 
+    const subscription = await prisma.subscription.findFirst({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+    // Government and charity orgs get their consumption covered by the subsidy pool.
+    const isSubsidized = subscription?.orgType === OrgType.GOVERNMENT || subscription?.orgType === OrgType.CHARITY;
+
     const newUsedGB = Math.min(allocation.usedGB + gbAmount, allocation.totalCapGB);
-    
+    const subsidyCapGB = isSubsidized ? Math.max(allocation.subsidyCapGB, allocation.totalCapGB) : allocation.subsidyCapGB;
+    const subsidyUsedGB = isSubsidized
+      ? Math.min(allocation.subsidyUsedGB + gbAmount, subsidyCapGB)
+      : allocation.subsidyUsedGB;
+
     await prisma.dataAllocation.update({
       where: { id: allocation.id },
       data: {
-        usedGB: newUsedGB
+        usedGB: newUsedGB,
+        subsidyCapGB,
+        subsidyUsedGB,
       }
     });
 

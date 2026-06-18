@@ -10,7 +10,6 @@ import {
   Globe, 
   Lock, 
   Smartphone,
-  Check,
   ChevronRight,
   Camera,
   LogOut,
@@ -75,12 +74,6 @@ export default function SettingsClientView({ user }: SettingsClientViewProps) {
   const [notifSystemUpdate, setNotifSystemUpdate] = useState(user.notifSystemUpdate);
   const [theme, setTheme] = useState(user.theme);
   const [language, setLanguage] = useState(user.language);
-
-  // Active Sessions state
-  const [sessions, setSessions] = useState([
-    { id: "s1", device: "MacBook Pro - Amsterdam, NL", type: "Current Session", date: "Now", icon: <Check className="w-4 h-4 text-emerald-500" /> },
-    { id: "s2", device: "iPhone 13 - Accra, GH", type: "Mobile App", date: "Yesterday, 14:02", icon: null }
-  ]);
 
   // Toast System
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -245,12 +238,6 @@ export default function SettingsClientView({ user }: SettingsClientViewProps) {
     } finally {
       setTwoFactorLoading(false);
     }
-  };
-
-  // Session Revocation
-  const handleRevokeSession = (sessionId: string, deviceName: string) => {
-    setSessions(prev => prev.filter(s => s.id !== sessionId));
-    showToast(`Session on ${deviceName} revoked successfully`, "success");
   };
 
   // Notification toggles (Instantly save)
@@ -561,29 +548,21 @@ export default function SettingsClientView({ user }: SettingsClientViewProps) {
                 <div className="space-y-4">
                    <h3 className="text-lg font-black text-zinc-800 tracking-tight ml-2">Active Sessions</h3>
                    <div className="divide-y divide-zinc-100">
-                      {sessions.length > 0 ? (
-                        sessions.map((session) => (
-                          <div key={session.id} className="py-6 flex justify-between items-center group">
-                             <div className="space-y-1">
-                                <p className="font-bold text-zinc-800 text-sm flex items-center space-x-2">
-                                   <span>{session.device}</span>
-                                   {session.icon}
-                                </p>
-                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{session.type} • {session.date}</p>
-                             </div>
-                             {session.type !== "Current Session" && (
-                               <button 
-                                 onClick={() => handleRevokeSession(session.id, session.device)}
-                                 className="text-[10px] font-black text-zinc-400 hover:text-z-red uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-                               >
-                                 Revoke
-                               </button>
-                             )}
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-zinc-400 p-4 text-center">No other active sessions detected.</p>
-                      )}
+                      <div className="py-6 flex justify-between items-center">
+                         <div className="space-y-1">
+                            <p className="font-bold text-zinc-800 text-sm flex items-center space-x-2">
+                               <span>This Device</span>
+                               <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Active</span>
+                            </p>
+                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Per-device session tracking isn&apos;t available yet</p>
+                         </div>
+                         <button
+                           onClick={() => signOut({ callbackUrl: "/" })}
+                           className="text-[10px] font-black text-zinc-400 hover:text-z-red uppercase tracking-widest transition-all cursor-pointer"
+                         >
+                           Sign Out
+                         </button>
+                      </div>
                    </div>
                 </div>
               </div>

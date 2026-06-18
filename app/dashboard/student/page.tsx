@@ -17,27 +17,24 @@ export default async function StudentDashboard() {
     currentStreak: number;
   }
 
-  // 1. Fetch User Stats
-  const prisma = db as unknown as { userStats: { findUnique: (args: unknown) => Promise<UserStats | null>, create: (args: unknown) => Promise<UserStats> } };
-  let stats = await prisma.userStats.findUnique({
-    where: { userId: session.user.id }
-  });
-
-  if (!stats) {
-    try {
-      stats = await prisma.userStats.create({
-        data: {
-          userId: session.user.id,
-          points: 0,
-          level: 1,
-          focusTime: 0
-        }
-      });
-    } catch (e) {
-      console.error("Stats creation failed (User might not exist yet):", e);
-      // Fallback stats to prevent 500 error
-      stats = { points: 0, level: 1, focusTime: 0, currentStreak: 0 };
-    }
+  // 1. Fetch or create User Stats
+  const prisma = db as unknown as { userStats: { upsert: (args: unknown) => Promise<UserStats> } };
+  let stats: UserStats;
+  try {
+    stats = await prisma.userStats.upsert({
+      where: { userId: session.user.id },
+      update: {},
+      create: {
+        userId: session.user.id,
+        points: 0,
+        level: 1,
+        focusTime: 0,
+        currentStreak: 0,
+      }
+    });
+  } catch (e) {
+    console.error("Stats upsert failed:", e);
+    stats = { points: 0, level: 1, focusTime: 0, currentStreak: 0 };
   }
 
   // 2. Fetch Enrollments with Course details

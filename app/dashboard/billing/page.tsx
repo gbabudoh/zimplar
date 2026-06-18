@@ -30,6 +30,7 @@ export default async function BillingPage() {
     reference: tx.reference,
     createdAt: tx.createdAt,
     amount: tx.amount,
+    status: tx.status,
   }));
 
   const allocation = alloc ? {
