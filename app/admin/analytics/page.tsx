@@ -9,8 +9,6 @@ import {
   BookOpen, 
   DollarSign, 
   AlertCircle,
-  ArrowUpRight,
-  ArrowDownRight,
   Activity,
   Globe
 } from "lucide-react";
@@ -21,8 +19,11 @@ interface AnalyticsData {
     users: number;
     teachers: number;
     students: number;
+    orgAdmins: number;
+    admins: number;
     courses: number;
     revenue: number;
+    transactionCount: number;
     subscriptions: number;
     alerts: number;
   };
@@ -31,7 +32,17 @@ interface AnalyticsData {
     _sum: { amount: number | null };
     _count: number;
   }>;
+  alertsByType: Array<{
+    type: string;
+    _count: number;
+  }>;
 }
+
+const ALERT_TYPE_LABELS: Record<string, string> = {
+  PHONE_DETECTED: "Phone Detection",
+  OUT_OF_FRAME: "Out of Frame",
+  MULTIPLE_PEOPLE: "Multiple People",
+};
 
 interface CourseStats {
   id: string;
@@ -80,10 +91,10 @@ export default function AnalyticsPage() {
   const stats = data.stats;
 
   const statCards = [
-    { label: "Total Users", value: stats.users, detail: `${stats.teachers} Teachers`, icon: Users, color: "blue", trend: "+12%" },
-    { label: "Revenue", value: `$${stats.revenue.toFixed(2)}`, detail: `${stats.subscriptions} Active Subs`, icon: DollarSign, color: "emerald", trend: "+8.4%" },
-    { label: "Active Courses", value: stats.courses, detail: "Across all tiers", icon: BookOpen, color: "purple", trend: "+5%" },
-    { label: "Security Alerts", value: stats.alerts, detail: "Malpractice flags", icon: AlertCircle, color: "red", trend: "-15%" },
+    { label: "Total Users", value: stats.users, detail: `${stats.teachers} Teachers`, icon: Users, color: "blue" },
+    { label: "Revenue", value: `$${stats.revenue.toFixed(2)}`, detail: `${stats.subscriptions} Active Subs`, icon: DollarSign, color: "emerald" },
+    { label: "Active Courses", value: stats.courses, detail: "Across all tiers", icon: BookOpen, color: "purple" },
+    { label: "Security Alerts", value: stats.alerts, detail: "Malpractice flags", icon: AlertCircle, color: "red" },
   ];
 
   return (
@@ -105,7 +116,7 @@ export default function AnalyticsPage() {
           <div className="flex space-x-2">
              <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl border border-emerald-100 flex items-center space-x-2">
                 <Activity className="w-4 h-4" />
-                <span className="text-[10px] font-black uppercase tracking-widest leading-none">System Healthy</span>
+                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Database Connected</span>
              </div>
           </div>
         </header>
@@ -117,10 +128,6 @@ export default function AnalyticsPage() {
                 <div className="flex justify-between items-start mb-4 relative z-10">
                    <div className={`p-3 rounded-2xl ${s.color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : s.color === 'red' ? 'bg-red-50 text-red-600' : s.color === 'blue' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
                       <s.icon className="w-5 h-5" />
-                   </div>
-                   <div className={`flex items-center space-x-1 text-[10px] font-black uppercase ${s.trend.startsWith('+') ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {s.trend.startsWith('+') ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                      <span>{s.trend}</span>
                    </div>
                 </div>
                 <div className="relative z-10">
@@ -144,7 +151,7 @@ export default function AnalyticsPage() {
                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Monthly Recurring Growth</p>
                     </div>
                     <div className="flex space-x-2">
-                       <button className="px-4 py-2 bg-white/5 rounded-xl text-[10px] font-black text-white uppercase tracking-widest hover:bg-white/10 transition-all border border-white/5">Export Report</button>
+                       <button disabled title="Coming soon" className="px-4 py-2 bg-white/5 rounded-xl text-[10px] font-black text-zinc-500 uppercase tracking-widest border border-white/5 cursor-not-allowed">Export Report</button>
                     </div>
                  </div>
 
@@ -170,44 +177,44 @@ export default function AnalyticsPage() {
 
                  <div className="grid grid-cols-3 gap-4 mt-10 pt-10 border-t border-white/5">
                     <div>
-                       <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Retention Rate</p>
-                       <p className="text-lg font-black text-white group-hover:text-emerald-400 transition-colors">94.8%</p>
+                       <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Active Subs</p>
+                       <p className="text-lg font-black text-white">{stats.subscriptions}</p>
                     </div>
                     <div>
-                       <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Avg. Ticket</p>
-                       <p className="text-lg font-black text-white">$142.3</p>
+                       <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Transactions</p>
+                       <p className="text-lg font-black text-white">{stats.transactionCount}</p>
                     </div>
                     <div>
-                       <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Growth Forecast</p>
-                       <p className="text-lg font-black text-white text-emerald-400">+22.5%</p>
+                       <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Avg. Revenue / Sub</p>
+                       <p className="text-lg font-black text-white">${stats.subscriptions > 0 ? (stats.revenue / stats.subscriptions).toFixed(2) : "0.00"}</p>
                     </div>
                  </div>
               </div>
            </div>
 
-           {/* Geo Distribution (Simulated for visualization) */}
+           {/* User Role Distribution */}
            <div className="bg-white rounded-[2.5rem] p-8 border border-zinc-100 shadow-xl flex flex-col">
               <div className="flex items-center space-x-3 mb-8">
                  <Globe className="w-5 h-5 text-z-blue" />
-                 <h3 className="text-lg font-black text-zinc-800 tracking-tight">Geo Distribution</h3>
+                 <h3 className="text-lg font-black text-zinc-800 tracking-tight">User Role Distribution</h3>
               </div>
-              
+
               <div className="flex-grow space-y-6">
                  {[
-                    { country: "Nigeria", users: "4.2k", pct: 45, color: "bg-emerald-500" },
-                    { country: "Kenya", users: "2.1k", pct: 25, color: "bg-z-blue" },
-                    { country: "Ghana", users: "1.5k", pct: 18, color: "bg-z-red" },
-                    { country: "Egypt", users: "800", pct: 12, color: "bg-purple-500" },
-                 ].map(g => (
-                    <div key={g.country} className="flex items-center space-x-4">
-                       <div className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center text-[10px] font-black text-zinc-400">{g.country.slice(0,2).toUpperCase()}</div>
+                    { role: "Students", count: stats.students, color: "bg-z-blue" },
+                    { role: "Teachers", count: stats.teachers, color: "bg-orange-500" },
+                    { role: "Org Admins", count: stats.orgAdmins, color: "bg-purple-500" },
+                    { role: "Admins", count: stats.admins, color: "bg-z-red" },
+                 ].map(r => (
+                    <div key={r.role} className="flex items-center space-x-4">
+                       <div className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center text-[10px] font-black text-zinc-400">{r.role.slice(0,2).toUpperCase()}</div>
                        <div className="flex-grow">
                           <div className="flex justify-between items-center mb-1">
-                             <span className="text-xs font-black text-zinc-800 uppercase tracking-tighter">{g.country}</span>
-                             <span className="text-[10px] font-bold text-zinc-400">{g.users}</span>
+                             <span className="text-xs font-black text-zinc-800 uppercase tracking-tighter">{r.role}</span>
+                             <span className="text-[10px] font-bold text-zinc-400">{r.count}</span>
                           </div>
                           <div className="h-1.5 bg-zinc-50 rounded-full overflow-hidden">
-                             <div className={`h-full ${g.color}`} style={{ width: `${g.pct}%` }}></div>
+                             <div className={`h-full ${r.color}`} style={{ width: `${stats.users > 0 ? Math.round((r.count / stats.users) * 100) : 0}%` }}></div>
                           </div>
                        </div>
                     </div>
@@ -215,8 +222,8 @@ export default function AnalyticsPage() {
               </div>
 
               <div className="mt-8 p-6 bg-zinc-50 rounded-3xl border border-zinc-100 text-center">
-                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Active Regions</p>
-                 <p className="text-sm font-black text-zinc-800">14 Major Cities</p>
+                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Total Users</p>
+                 <p className="text-sm font-black text-zinc-800">{stats.users}</p>
               </div>
            </div>
         </div>
@@ -229,7 +236,7 @@ export default function AnalyticsPage() {
                     <TrendingUp className="w-5 h-5 text-purple-600" />
                     <h3 className="text-lg font-black text-zinc-800 tracking-tight">Trending Courses</h3>
                  </div>
-                 <button className="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-z-red">All Courses</button>
+                 <button disabled title="Coming soon" className="text-[10px] font-black text-zinc-300 uppercase tracking-widest cursor-not-allowed">All Courses</button>
               </div>
               <div className="p-4">
                  <div className="space-y-2">
@@ -254,31 +261,32 @@ export default function AnalyticsPage() {
               </div>
            </div>
 
-           {/* Malpractice Heatmap (Simulated) */}
+           {/* Security & Proctoring */}
            <div className="bg-white rounded-[2.5rem] border border-zinc-100 shadow-xl p-8 relative overflow-hidden">
               <div className="flex items-center space-x-3 mb-10">
                  <AlertCircle className="w-5 h-5 text-z-red" />
                  <h3 className="text-lg font-black text-zinc-800 tracking-tight">Security & Proctoring</h3>
               </div>
 
-              <div className="flex items-center justify-center h-48 mb-10 group relative">
-                 <div className="w-32 h-32 rounded-full border-[10px] border-zinc-50 border-t-z-red border-r-z-red group-hover:rotate-45 transition-transform duration-700"></div>
-                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <p className="text-3xl font-black text-zinc-800">24%</p>
-                    <p className="text-[10px] font-black text-z-red uppercase tracking-widest">Alert Rate</p>
+              <div className="flex items-center justify-center h-32 mb-10">
+                 <div>
+                    <p className="text-4xl font-black text-zinc-800 text-center">{stats.alerts}</p>
+                    <p className="text-[10px] font-black text-z-red uppercase tracking-widest text-center mt-1">Total Flags</p>
                  </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="p-6 bg-red-50 rounded-[2rem] border border-red-100">
-                    <p className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">Phone Detection</p>
-                    <p className="text-lg font-black text-red-600">342 Flags</p>
-                 </div>
-                 <div className="p-6 bg-amber-50 rounded-[2rem] border border-amber-100">
-                    <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">Out of Frame</p>
-                    <p className="text-lg font-black text-amber-600">89 Flags</p>
-                 </div>
-              </div>
+              {data.alertsByType.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                   {data.alertsByType.map((a) => (
+                     <div key={a.type} className="p-6 bg-red-50 rounded-[2rem] border border-red-100">
+                        <p className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">{ALERT_TYPE_LABELS[a.type] || a.type}</p>
+                        <p className="text-lg font-black text-red-600">{a._count} Flags</p>
+                     </div>
+                   ))}
+                </div>
+              ) : (
+                <p className="text-xs font-bold text-zinc-400 text-center">No security flags recorded yet.</p>
+              )}
            </div>
         </div>
       </main>

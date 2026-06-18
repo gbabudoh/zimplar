@@ -5,14 +5,30 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import Image from "next/image";
 import { getAllUsers } from "@/actions/admin";
 import type { User } from "@prisma/client";
-import { 
-  Search, 
-  MoreVertical, 
-  CheckCircle2, 
+import {
+  Search,
+  MoreVertical,
+  CheckCircle2,
   ShieldAlert,
   GraduationCap,
-  Users
+  Users,
+  Building,
+  Shield
 } from "lucide-react";
+
+const ROLE_BADGE_STYLES: Record<string, string> = {
+  TEACHER: "bg-orange-50 border-orange-100 text-orange-600",
+  STUDENT: "bg-blue-50 border-blue-100 text-z-blue",
+  ORG_ADMIN: "bg-purple-50 border-purple-100 text-purple-600",
+  ADMIN: "bg-red-50 border-red-100 text-z-red",
+};
+
+const ROLE_BADGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  TEACHER: GraduationCap,
+  STUDENT: Users,
+  ORG_ADMIN: Building,
+  ADMIN: Shield,
+};
 
 export default function AdminUsersPage() {
   const [filterRole, setFilterRole] = useState("ALL");
@@ -65,7 +81,7 @@ export default function AdminUsersPage() {
              <p className="text-zinc-500 font-medium ml-1">Manage network access, verify teachers, and audit accounts.</p>
           </div>
           
-          <button className="px-6 py-3 bg-z-red text-white rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-z-red/20 cursor-pointer">
+          <button disabled title="Coming soon" className="px-6 py-3 bg-zinc-200 text-zinc-400 rounded-xl font-black text-xs uppercase tracking-widest cursor-not-allowed">
              Export CSV
           </button>
         </header>
@@ -85,11 +101,23 @@ export default function AdminUsersPage() {
               >
                  Teachers
               </button>
-              <button 
+              <button
                 onClick={() => setFilterRole("STUDENT")}
                 className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${filterRole === 'STUDENT' ? 'bg-white shadow-md text-z-blue' : 'text-zinc-400 hover:text-zinc-600'}`}
               >
                  Students
+              </button>
+              <button
+                onClick={() => setFilterRole("ORG_ADMIN")}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${filterRole === 'ORG_ADMIN' ? 'bg-white shadow-md text-purple-600' : 'text-zinc-400 hover:text-zinc-600'}`}
+              >
+                 Org Admins
+              </button>
+              <button
+                onClick={() => setFilterRole("ADMIN")}
+                className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${filterRole === 'ADMIN' ? 'bg-white shadow-md text-z-red' : 'text-zinc-400 hover:text-zinc-600'}`}
+              >
+                 Admins
               </button>
            </div>
            
@@ -136,10 +164,15 @@ export default function AdminUsersPage() {
                          </div>
                       </td>
                       <td className="py-6 px-4">
-                         <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-lg border ${user.role === 'TEACHER' ? 'bg-orange-50 border-orange-100 text-orange-600' : 'bg-blue-50 border-blue-100 text-z-blue'}`}>
-                            {user.role === 'TEACHER' ? <GraduationCap className="w-3 h-3" /> : <Users className="w-3 h-3" />}
-                            <span className="text-[10px] font-black uppercase tracking-wider">{user.role}</span>
-                         </div>
+                         {(() => {
+                           const RoleIcon = ROLE_BADGE_ICONS[user.role] || Users;
+                           return (
+                             <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-lg border ${ROLE_BADGE_STYLES[user.role] || ROLE_BADGE_STYLES.STUDENT}`}>
+                                <RoleIcon className="w-3 h-3" />
+                                <span className="text-[10px] font-black uppercase tracking-wider">{user.role}</span>
+                             </div>
+                           );
+                         })()}
                       </td>
                       <td className="py-6 px-4">
                          {(user as User & { emailVerified: Date | null }).emailVerified ? (
@@ -158,7 +191,7 @@ export default function AdminUsersPage() {
                          {new Date(user.createdAt).toLocaleDateString()}
                       </td>
                       <td className="py-6 px-8 text-right">
-                         <button className="p-2 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg transition-all cursor-pointer">
+                         <button disabled title="Coming soon" className="p-2 text-zinc-300 cursor-not-allowed">
                             <MoreVertical className="w-5 h-5" />
                          </button>
                       </td>

@@ -65,6 +65,9 @@ model User {
   notifications Notification[]
 
   videoSessions VideoSession[]
+
+  // Schools
+  schools School[]
 }
 
 model Notification {
@@ -454,6 +457,28 @@ model OrganizationProfile {
   verifiedAt   DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+}
+
+// --- SCHOOLS ---
+
+model School {
+  id          String       @id @default(cuid())
+  name        String
+  location    String
+  regionType  RegionType   @default(URBAN)
+  classrooms  Int          @default(0)
+  students    Int          @default(0)
+  status      SchoolStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+enum SchoolStatus {
+  PENDING
+  VERIFIED
 }
 
 model PasswordResetToken {

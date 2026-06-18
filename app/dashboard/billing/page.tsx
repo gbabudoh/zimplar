@@ -36,6 +36,8 @@ export default async function BillingPage() {
   const allocation = alloc ? {
     totalCapGB: alloc.totalCapGB,
     usedGB: alloc.usedGB,
+    subsidyCapGB: alloc.subsidyCapGB,
+    subsidyUsedGB: alloc.subsidyUsedGB,
   } : null;
 
   return (

@@ -3,8 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Users, Award, GraduationCap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getActiveLessonsCount } from "@/actions/courses";
 
 const Hero = () => {
+  const [lessonsCount, setLessonsCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    getActiveLessonsCount().then((count) => {
+      setLessonsCount(count);
+    });
+  }, []);
   return (
     <div className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-white">
       {/* Decorative Orbs */}
@@ -96,16 +105,18 @@ const Hero = () => {
                    </div>
             </div>
             
-            {/* Floating Card 1 */}
-            <div className="absolute top-10 -left-10 z-20 bg-white p-4 rounded-2xl shadow-xl flex items-center space-x-3 animate-bounce-slow">
-               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                 <div className="w-4 h-4 bg-green-500 rounded-full pulse-ping"></div>
-               </div>
-               <div>
-                  <p className="text-xs font-bold text-z-gray uppercase tracking-widest">Active Lessons</p>
-                  <p className="text-lg font-black text-z-red">2,481</p>
-               </div>
-            </div>
+            {/* Floating Card 1 - Dynamic Active Lessons */}
+            {lessonsCount !== null && lessonsCount > 0 && (
+              <div className="absolute top-10 -left-10 z-20 bg-white p-4 rounded-2xl shadow-xl flex items-center space-x-3 animate-bounce-slow">
+                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                   <div className="w-4 h-4 bg-green-500 rounded-full pulse-ping"></div>
+                 </div>
+                 <div>
+                    <p className="text-xs font-bold text-z-gray uppercase tracking-widest">Active Lessons</p>
+                    <p className="text-lg font-black text-z-red">{lessonsCount.toLocaleString()}</p>
+                 </div>
+              </div>
+            )}
 
              {/* Floating Card 2 */}
              <div className="absolute bottom-10 -right-6 z-20 bg-white p-6 rounded-[2rem] shadow-xl max-w-[200px]">

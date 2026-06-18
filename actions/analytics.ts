@@ -25,19 +25,28 @@ export async function getPlatformAnalytics() {
       totalUsers,
       totalTeachers,
       totalStudents,
+      totalOrgAdmins,
+      totalAdmins,
       totalCourses,
-      totalRevenueData,
-      recentAlerts
+      completedRevenueData,
+      activeSubscriptions,
+      recentAlerts,
+      alertsByType
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: Role.TEACHER } }),
       prisma.user.count({ where: { role: Role.STUDENT } }),
+      prisma.user.count({ where: { role: Role.ORG_ADMIN } }),
+      prisma.user.count({ where: { role: Role.ADMIN } }),
       prisma.course.count(),
       prisma.transaction.aggregate({
         _count: true,
-        _sum: { amount: true }
+        _sum: { amount: true },
+        where: { status: "COMPLETED" }
       }),
-      prisma.aIAlert.count()
+      prisma.subscription.count({ where: { status: "ACTIVE" } }),
+      prisma.aIAlert.count(),
+      prisma.aIAlert.groupBy({ by: ["type"], _count: true })
     ]);
 
     // Aggregate revenue by plan type
@@ -52,17 +61,66 @@ export async function getPlatformAnalytics() {
         users: totalUsers,
         teachers: totalTeachers,
         students: totalStudents,
+        orgAdmins: totalOrgAdmins,
+        admins: totalAdmins,
         courses: totalCourses,
-        revenue: (totalRevenueData as AggregateResult)._sum.amount || 0,
-        subscriptions: (totalRevenueData as AggregateResult)._count || 0,
+        revenue: (completedRevenueData as AggregateResult)._sum.amount || 0,
+        transactionCount: (completedRevenueData as AggregateResult)._count || 0,
+        subscriptions: activeSubscriptions,
         alerts: recentAlerts
       },
       revenueByPlan,
-      recentTransactions: totalRevenueData
+      alertsByType
     };
   } catch (error) {
     console.error("[ANALYTICS] Failed to fetch metrics:", error);
     throw new Error("Analytics retrieval failed.");
+  }
+}
+
+export async function getRecentTransactionsAdmin() {
+  await checkAdmin();
+  try {
+    const transactions = await prisma.transaction.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      include: { user: { select: { name: true, email: true } } }
+    });
+    return transactions;
+  } catch (error) {
+    console.error("[ANALYTICS_TX] Failed:", error);
+    return [];
+  }
+}
+
+export async function getDataSalesSummary() {
+  await checkAdmin();
+  try {
+    const agg = await prisma.dataPurchase.aggregate({
+      _sum: { cost: true, amountGB: true }
+    });
+    return {
+      totalRevenue: agg._sum.cost || 0,
+      totalGBSold: agg._sum.amountGB || 0
+    };
+  } catch (error) {
+    console.error("[ANALYTICS_DATA] Failed:", error);
+    return { totalRevenue: 0, totalGBSold: 0 };
+  }
+}
+
+export async function getSubscriptionTierCounts() {
+  await checkAdmin();
+  try {
+    const counts = await prisma.subscription.groupBy({
+      by: ["planType"],
+      where: { status: "ACTIVE" },
+      _count: true
+    });
+    return counts;
+  } catch (error) {
+    console.error("[ANALYTICS_TIERS] Failed:", error);
+    return [];
   }
 }
 

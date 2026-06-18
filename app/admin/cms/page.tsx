@@ -1,17 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
-import Image from "next/image";
 import { getSiteSettings, updateSiteSettings } from "@/actions/admin";
-import { 
-  Save, 
-  Layout, 
-  Type, 
+import {
+  Save,
+  Layout,
+  Type,
   Image as ImageIcon,
-  ToggleLeft, 
+  ToggleLeft,
   ToggleRight,
-  Eye,
   CheckCircle2
 } from "lucide-react";
 
@@ -19,6 +17,8 @@ export default function AdminCMSPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [heroTitle, setHeroTitle] = useState("");
   const [heroSubtitle, setHeroSubtitle] = useState("");
+  const [heroImage, setHeroImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [toggles, setToggles] = useState({
     registration: true,
     maintenance: false,
@@ -31,6 +31,7 @@ export default function AdminCMSPage() {
       if (settings) {
         setHeroTitle(settings.heroTitle);
         setHeroSubtitle(settings.heroSubtitle || "");
+        setHeroImage(settings.heroImage || null);
         if (settings.features) {
           setToggles(settings.features as {
             registration: boolean;
@@ -46,12 +47,29 @@ export default function AdminCMSPage() {
     fetchSettings();
   }, []);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      console.error("Image must be smaller than 5MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setHeroImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
       await updateSiteSettings({
         heroTitle,
         heroSubtitle,
+        heroImage: heroImage || undefined,
         features: toggles
       });
       // Optional: show toast or success message
@@ -140,23 +158,29 @@ export default function AdminCMSPage() {
                  </div>
 
                  <div className="grid grid-cols-2 gap-6">
-                    <div className="border-2 border-dashed border-zinc-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center hover:bg-zinc-50 transition-colors cursor-pointer group">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageChange}
+                      className="hidden"
+                      accept="image/*"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-2 border-dashed border-zinc-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center hover:bg-zinc-50 transition-colors cursor-pointer group"
+                    >
                        <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
                           <ImageIcon className="w-5 h-5 text-zinc-400 group-hover:text-blue-600" />
                        </div>
                        <p className="text-xs font-bold text-zinc-600">Update Hero Image</p>
                        <p className="text-[10px] text-zinc-400 mt-1">PNG, JPG up to 5MB</p>
-                    </div>
-                    <div className="relative h-40 rounded-3xl overflow-hidden group">
-                       <Image 
-                         src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=800" 
-                         alt="Current Hero"
-                         fill
-                         className="object-cover"
-                       />
-                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Eye className="w-6 h-6 text-white" />
-                       </div>
+                    </button>
+                    <div className="relative h-40 rounded-3xl overflow-hidden bg-zinc-50 border border-zinc-100 flex items-center justify-center">
+                       {heroImage ? (
+                         <img src={heroImage} alt="Current Hero" className="w-full h-full object-cover" />
+                       ) : (
+                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">No Image Set</p>
+                       )}
                     </div>
                  </div>
               </div>
@@ -210,11 +234,10 @@ export default function AdminCMSPage() {
               </div>
 
               <div className="mt-8 pt-8 border-t border-white/10">
-                 <div className="flex items-center space-x-2 text-emerald-400 mb-2">
+                 <div className="flex items-center space-x-2 text-emerald-400">
                     <CheckCircle2 className="w-4 h-4" />
-                    <span className="text-xs font-bold">System Status: Operational</span>
+                    <span className="text-xs font-bold">Database Connected</span>
                  </div>
-                 <p className="text-[10px] text-zinc-500">Last health check: 2 mins ago</p>
               </div>
            </div>
         </div>

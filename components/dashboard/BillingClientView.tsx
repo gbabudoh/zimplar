@@ -15,7 +15,8 @@ import {
   ArrowUpRight,
   TrendingUp,
   Clock,
-  Download
+  Download,
+  Coins
 } from "lucide-react";
 import { 
   createSubscription, 
@@ -46,6 +47,8 @@ const STATUS_STYLES: Record<string, string> = {
 interface Allocation {
   totalCapGB: number;
   usedGB: number;
+  subsidyCapGB: number;
+  subsidyUsedGB: number;
 }
 
 interface CheckoutItem {
@@ -357,6 +360,31 @@ export default function BillingClientView({
          </div>
 
          <div className="space-y-6">
+            {allocation && allocation.subsidyCapGB > 0 && (
+              <div className="bg-zinc-900 p-8 rounded-[2.5rem] shadow-2xl text-white relative overflow-hidden">
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-z-gold/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                 <div className="flex items-center space-x-3 mb-6 relative z-10">
+                    <Coins className="w-5 h-5 text-z-gold" />
+                    <h3 className="text-lg font-black">Data Subsidy</h3>
+                 </div>
+                 <div className="relative z-10 space-y-3">
+                    <div className="flex justify-between items-end">
+                       <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Used</p>
+                       <p className="text-xl font-black text-white">{allocation.subsidyUsedGB.toFixed(1)} / {allocation.subsidyCapGB.toFixed(1)} GB</p>
+                    </div>
+                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                       <div
+                         className="h-full bg-gradient-to-r from-z-gold to-emerald-500 shadow-[0_0_20px_rgba(255,215,0,0.3)]"
+                         style={{ width: `${Math.round((allocation.subsidyUsedGB / allocation.subsidyCapGB) * 100)}%` }}
+                       ></div>
+                    </div>
+                    <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">
+                      Government and Charity plans cover bandwidth usage from this pool automatically.
+                    </p>
+                 </div>
+              </div>
+            )}
+
             <div className="bg-emerald-600 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
                <div className="flex items-center space-x-3 mb-6">
